@@ -1,0 +1,16 @@
+# Session Archive Plugin Configuration
+
+# 저장 위치 (프로젝트 기준 상대 경로)
+output_dir: ".claude/sessions"
+
+# 파일명 형식
+filename_format: "{date}_{time}_{session_id}"
+
+# 요약 생성 여부 (TODO)
+generate_summary: false
+
+# 인덱스 자동 업데이트 (TODO)
+update_index: false
+
+# 최대 보관 기간 (일, 0=무제한) (TODO)
+retention_days: 0
