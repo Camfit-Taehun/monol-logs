@@ -179,8 +179,8 @@ open_warp_tab() {
   local dir="$1"
   local command="$2"
 
-  # 임시 스크립트 생성
-  local tmp_script=$(mktemp /tmp/warp_cmd.XXXXXX.sh)
+  # 임시 스크립트 생성 (macOS mktemp)
+  local tmp_script=$(mktemp -t warp_cmd).sh
   cat > "$tmp_script" << SCRIPT
 #!/bin/bash
 cd '$dir'
@@ -200,8 +200,8 @@ open_warp_window() {
   local dir="$1"
   local command="$2"
 
-  # 임시 스크립트 생성
-  local tmp_script=$(mktemp /tmp/warp_cmd.XXXXXX.sh)
+  # 임시 스크립트 생성 (macOS mktemp)
+  local tmp_script=$(mktemp -t warp_cmd).sh
   cat > "$tmp_script" << SCRIPT
 #!/bin/bash
 cd '$dir'
@@ -440,7 +440,9 @@ branch_session() {
   add_branch_record "$branch_name" "$current_session" "$target_dir" "$parent_branch"
 
   # 3. Claude Code 시작 명령어
-  local claude_cmd="claude --resume $current_session --fork-session"
+  # 새 worktree는 다른 프로젝트로 인식되므로 --resume 불가
+  # 대신 복사된 .claude/sessions/에서 SessionStart 훅으로 컨텍스트 로드
+  local claude_cmd="claude"
 
   if [ "$no_auto" = true ]; then
     # 수동 모드: 명령어만 출력
