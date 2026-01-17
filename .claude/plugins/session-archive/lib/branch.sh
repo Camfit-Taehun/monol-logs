@@ -249,7 +249,19 @@ detect_terminal_app() {
   fi
 }
 
-# 터미널 열기 (설정 기반)
+# 터미널 앱 설치 여부 확인
+is_terminal_available() {
+  local app="$1"
+  case "$app" in
+    warp) [ -d "/Applications/Warp.app" ] ;;
+    iterm|iterm2) [ -d "/Applications/iTerm.app" ] ;;
+    kitty) command -v kitty &> /dev/null ;;
+    terminal) [ -d "/Applications/Utilities/Terminal.app" ] || [ -d "/System/Applications/Utilities/Terminal.app" ] ;;
+    *) return 1 ;;
+  esac
+}
+
+# 터미널 열기 (설정 기반 + fallback)
 open_terminal() {
   local dir="$1"
   local command="$2"
@@ -259,6 +271,12 @@ open_terminal() {
 
   # auto면 자동 감지
   if [ "$app" = "auto" ]; then
+    app=$(detect_terminal_app)
+  fi
+
+  # 설정된 터미널이 없으면 fallback
+  if ! is_terminal_available "$app"; then
+    echo "Warning: $app not found, falling back..." >&2
     app=$(detect_terminal_app)
   fi
 
