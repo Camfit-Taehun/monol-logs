@@ -1,13 +1,28 @@
-# Session Archive Plugin v3.1
+# Session Archive Plugin v3.2
 
 Claude Code 세션을 프로젝트 내에 자동 저장 + 로드맵/요약/인덱스/브랜치
 
 ## 스킬 (Commands)
 
 ```
+/sessions                # 아카이브된 세션 목록
+/sessions --available    # 내보내기 가능한 세션
+/sessions --update       # index.md 갱신
+
+/export                  # 최근 세션 내보내기
+/export <id> <topic>     # 특정 세션 내보내기
+/export --list           # 내보내기 가능한 세션
+
+/roadmap                 # 최근 세션 TODO 추출
+/roadmap --show          # roadmap.md 보기
+/roadmap --all           # 모든 세션 TODO 추출
+
+/summary                 # 최근 세션 AI 요약
+/summary --show          # 요약 보기
+/summary --rule-based    # API 없이 규칙 기반
+
 /branch <name>           # 세션 분기 → git worktree + 새 터미널
 /branch <name> --same-dir # 같은 폴더에서 세션만 분기
-/branch --list           # 세션 목록
 /branch --branches       # 분기 기록
 ```
 
@@ -91,7 +106,11 @@ export ANTHROPIC_API_KEY="sk-..."
 ```
 .claude/plugins/session-archive/
 ├── commands/
-│   └── branch.md            # /branch 스킬 (v3.1)
+│   ├── sessions.md          # /sessions 스킬
+│   ├── export.md            # /export 스킬
+│   ├── roadmap.md           # /roadmap 스킬
+│   ├── summary.md           # /summary 스킬
+│   └── branch.md            # /branch 스킬
 ├── hooks/
 │   ├── on-session-end.sh    # 세션 종료 훅
 │   └── on-pre-compact.sh    # 압축 전 훅

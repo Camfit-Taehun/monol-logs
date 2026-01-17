@@ -1,6 +1,6 @@
 # monol-logs
 
-Claude Code 세션 아카이브 플러그인 v3.1
+Claude Code 세션 아카이브 플러그인 v3.2
 
 > **"모든 AI 대화를 프로젝트 자산으로"**
 
@@ -39,9 +39,12 @@ Claude Code는 세션을 `~/.claude/projects/` 아래에 저장하지만:
 - git worktree 자동 생성 + 새 터미널 열기
 - 대화 컨텍스트 유지하며 새 작업 시작
 
-### 6. /branch 스킬 (v3.1)
-- Claude Code 안에서 `/branch` 명령으로 세션 분기
-- 터미널 스크립트 없이 바로 사용 가능
+### 6. Claude Code 스킬 (v3.2)
+- `/sessions` - 세션 목록 및 인덱스 관리
+- `/export` - 세션 내보내기
+- `/roadmap` - TODO/로드맵 추출
+- `/summary` - AI 요약 생성
+- `/branch` - 세션 분기
 
 ## 구조
 
@@ -50,7 +53,11 @@ Claude Code는 세션을 `~/.claude/projects/` 아래에 저장하지만:
 ├── CLAUDE.md
 ├── config.yaml
 ├── commands/
-│   └── branch.md             # /branch 스킬 (v3.1)
+│   ├── sessions.md           # /sessions 스킬
+│   ├── export.md             # /export 스킬
+│   ├── roadmap.md            # /roadmap 스킬
+│   ├── summary.md            # /summary 스킬
+│   └── branch.md             # /branch 스킬
 ├── hooks/
 │   ├── on-session-end.sh     # SessionEnd 훅
 │   └── on-pre-compact.sh     # PreCompact 훅
@@ -80,13 +87,29 @@ git clone https://github.com/your/monol-logs.git ~/Work/kent-labs/monol-logs
 
 ## 사용법
 
-### /branch 스킬 (Claude Code 안에서)
+### 스킬 (Claude Code 안에서)
 
 ```
-/branch feature-login        # git worktree + 새 터미널에서 분기
-/branch experiment --same-dir # 같은 폴더에서 세션만 분기
-/branch --list               # 세션 목록
-/branch --branches           # 분기 기록
+# 세션 목록
+/sessions                    # 아카이브된 세션 목록
+/sessions --available        # 내보내기 가능한 세션
+/sessions --update           # index.md 갱신
+
+# 세션 내보내기
+/export                      # 최근 세션 내보내기
+/export <id> <topic>         # 특정 세션 + 토픽 지정
+
+# 로드맵/TODO
+/roadmap                     # 최근 세션 TODO 추출
+/roadmap --show              # roadmap.md 보기
+
+# AI 요약
+/summary                     # 최근 세션 AI 요약
+/summary --rule-based        # API 없이 규칙 기반
+
+# 세션 분기
+/branch feature-b            # git worktree + 새 터미널
+/branch exp --same-dir       # 같은 폴더에서 세션만 분기
 ```
 
 ### 자동 저장 (설치 후 자동)
