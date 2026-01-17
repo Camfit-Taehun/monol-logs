@@ -1,6 +1,6 @@
 # monol-logs
 
-Claude Code 세션 아카이브 플러그인 v2.0
+Claude Code 세션 아카이브 플러그인 v3.0
 
 > **"모든 AI 대화를 프로젝트 자산으로"**
 
@@ -34,25 +34,32 @@ Claude Code는 세션을 `~/.claude/projects/` 아래에 저장하지만:
 - 전체 세션 목록 `index.md` 자동 생성
 - 날짜, 토픽, 메시지 수, 크기 등 메타데이터
 
+### 5. 세션 브랜치 (v3.0)
+- **Git 브랜치처럼** 현재 세션을 분기
+- git worktree 자동 생성 + 새 터미널 열기
+- 대화 컨텍스트 유지하며 새 작업 시작
+
 ## 구조
 
 ```
 .claude/plugins/session-archive/
 ├── CLAUDE.md
-├── config.yaml           # 설정 (로드맵, 요약, 인덱스 옵션)
+├── config.yaml
 ├── hooks/
-│   ├── on-session-end.sh # SessionEnd 훅 (+로드맵, 요약, 인덱스)
-│   └── on-pre-compact.sh # PreCompact 훅
+│   ├── on-session-end.sh     # SessionEnd 훅
+│   └── on-pre-compact.sh     # PreCompact 훅
 ├── scripts/
-│   ├── setup.sh          # 설치 스크립트
-│   ├── export-session.sh # 수동 내보내기
+│   ├── setup.sh              # 설치
+│   ├── export-session.sh     # 수동 내보내기
 │   ├── extract-roadmap.sh    # 로드맵 추출
 │   ├── generate-summary.sh   # 요약 생성
-│   └── update-index.sh       # 인덱스 업데이트
+│   ├── update-index.sh       # 인덱스 업데이트
+│   └── session-branch.sh     # 세션 브랜치 (v3.0)
 └── lib/
-    ├── utils.sh          # 공통 유틸
-    ├── roadmap.sh        # 로드맵 유틸
-    └── summary.sh        # 요약 유틸
+    ├── utils.sh              # 공통 유틸
+    ├── roadmap.sh            # 로드맵 유틸
+    ├── summary.sh            # 요약 유틸
+    └── branch.sh             # 브랜치 유틸 (v3.0)
 ```
 
 ## 설치
@@ -103,6 +110,13 @@ generate-summary.sh --rule-based      # API 없이 규칙 기반
 # 인덱스 업데이트
 update-index.sh                       # index.md 갱신
 update-index.sh --show                # index.md 보기
+
+# 세션 브랜치 (v3.0)
+session-branch.sh feature-b           # git worktree + 새 터미널
+session-branch.sh exp --same-dir      # 같은 폴더에서 세션만 분기
+session-branch.sh fix --no-auto       # 터미널 자동 열기 안 함
+session-branch.sh --list              # 현재 세션 목록
+session-branch.sh --branches          # 분기 기록 보기
 ```
 
 ## 설정

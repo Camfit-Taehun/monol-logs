@@ -1,6 +1,6 @@
-# Session Archive Plugin v2.0
+# Session Archive Plugin v3.0
 
-Claude Code 세션을 프로젝트 내에 자동 저장 + 로드맵/요약/인덱스 생성
+Claude Code 세션을 프로젝트 내에 자동 저장 + 로드맵/요약/인덱스/브랜치
 
 ## 설치
 
@@ -35,6 +35,12 @@ Claude Code 세션을 프로젝트 내에 자동 저장 + 로드맵/요약/인�
 # 인덱스 업데이트
 ./scripts/update-index.sh
 ./scripts/update-index.sh --show
+
+# 세션 브랜치 (v3.0)
+./scripts/session-branch.sh feature-b     # worktree + 새 터미널
+./scripts/session-branch.sh exp --same-dir # 같은 폴더
+./scripts/session-branch.sh --list        # 세션 목록
+./scripts/session-branch.sh --branches    # 분기 기록
 ```
 
 ## 설정 (config.yaml)
@@ -76,18 +82,20 @@ export ANTHROPIC_API_KEY="sk-..."
 ```
 .claude/plugins/session-archive/
 ├── hooks/
-│   ├── on-session-end.sh    # 세션 종료 훅 (메인)
+│   ├── on-session-end.sh    # 세션 종료 훅
 │   └── on-pre-compact.sh    # 압축 전 훅
 ├── scripts/
 │   ├── setup.sh             # 설치
 │   ├── export-session.sh    # 수동 내보내기
 │   ├── extract-roadmap.sh   # 로드맵 추출
 │   ├── generate-summary.sh  # 요약 생성
-│   └── update-index.sh      # 인덱스 업데이트
+│   ├── update-index.sh      # 인덱스 업데이트
+│   └── session-branch.sh    # 세션 브랜치 (v3.0)
 ├── lib/
 │   ├── utils.sh             # 공통 유틸
 │   ├── roadmap.sh           # 로드맵 유틸
-│   └── summary.sh           # 요약 유틸
+│   ├── summary.sh           # 요약 유틸
+│   └── branch.sh            # 브랜치 유틸 (v3.0)
 ├── config.yaml              # 설정
 └── CLAUDE.md                # 이 파일
 ```

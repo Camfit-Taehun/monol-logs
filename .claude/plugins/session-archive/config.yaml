@@ -82,6 +82,25 @@ topic_auto_extract: true
 topic_from_first_message: true
 
 # =====================
+# 브랜치 설정 (v3.0)
+# =====================
+
+# 기본 분기 모드: worktree | same-dir | copy
+branch_default_mode: "worktree"
+
+# 새 터미널 자동 열기
+branch_auto_terminal: true
+
+# 터미널 앱: auto | iterm | terminal
+branch_terminal_app: "auto"
+
+# worktree 생성 위치 (현재 디렉토리 기준 상대경로)
+branch_worktree_dir: ".."
+
+# 브랜치 기록 파일명
+branch_registry_file: "branches.md"
+
+# =====================
 # 보관 정책
 # =====================
 
