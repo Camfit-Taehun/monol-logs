@@ -405,6 +405,9 @@ branch_session() {
   local target_dir=$(pwd)
   local parent_branch="main"
 
+  # 원본 프로젝트 경로 저장
+  local source_dir=$(pwd)
+
   # 1. git worktree 생성 (옵션에 따라)
   if [ "$same_dir" = false ] && [ "$no_worktree" = false ]; then
     echo "Creating git worktree..."
@@ -417,6 +420,14 @@ branch_session() {
 
     parent_branch=$(git rev-parse --abbrev-ref HEAD 2>/dev/null || echo "main")
     echo "Worktree created: $target_dir"
+
+    # 1.5 .claude/sessions 폴더 복사
+    if [ -d "$source_dir/.claude/sessions" ]; then
+      echo "Copying session history..."
+      mkdir -p "$target_dir/.claude"
+      cp -r "$source_dir/.claude/sessions" "$target_dir/.claude/sessions"
+      echo "Session history copied"
+    fi
   fi
 
   # 2. 브랜치 레지스트리에 기록
