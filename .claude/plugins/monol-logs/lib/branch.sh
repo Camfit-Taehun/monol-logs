@@ -174,40 +174,46 @@ end tell
 EOF
 }
 
-# Warp에서 새 탭 열기
+# Warp에서 새 탭 열기 (CLI 방식)
 open_warp_tab() {
   local dir="$1"
   local command="$2"
 
-  osascript << EOF
-tell application "Warp"
-  activate
-  tell application "System Events"
-    keystroke "t" using command down
-    delay 0.3
-    keystroke "cd '$dir' && $command"
-    key code 36  -- Enter
-  end tell
-end tell
-EOF
+  # 임시 스크립트 생성
+  local tmp_script=$(mktemp /tmp/warp_cmd.XXXXXX.sh)
+  cat > "$tmp_script" << SCRIPT
+#!/bin/bash
+cd '$dir'
+$command
+SCRIPT
+  chmod +x "$tmp_script"
+
+  # Warp에서 새 탭으로 스크립트 실행
+  open -a Warp "$tmp_script"
+
+  # 잠시 후 임시 파일 삭제 (백그라운드)
+  (sleep 5 && rm -f "$tmp_script") &
 }
 
-# Warp에서 새 창 열기
+# Warp에서 새 창 열기 (CLI 방식)
 open_warp_window() {
   local dir="$1"
   local command="$2"
 
-  osascript << EOF
-tell application "Warp"
-  activate
-  tell application "System Events"
-    keystroke "n" using command down
-    delay 0.3
-    keystroke "cd '$dir' && $command"
-    key code 36  -- Enter
-  end tell
-end tell
-EOF
+  # 임시 스크립트 생성
+  local tmp_script=$(mktemp /tmp/warp_cmd.XXXXXX.sh)
+  cat > "$tmp_script" << SCRIPT
+#!/bin/bash
+cd '$dir'
+$command
+SCRIPT
+  chmod +x "$tmp_script"
+
+  # Warp에서 새 창으로 스크립트 실행
+  open -na Warp "$tmp_script"
+
+  # 잠시 후 임시 파일 삭제 (백그라운드)
+  (sleep 5 && rm -f "$tmp_script") &
 }
 
 # Kitty에서 새 탭 열기
