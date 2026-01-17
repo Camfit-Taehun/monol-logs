@@ -91,7 +91,8 @@ branch_default_mode: "worktree"
 # 새 터미널 자동 열기
 branch_auto_terminal: true
 
-# 터미널 앱: auto | iterm | terminal
+# 터미널 앱: auto | warp | iterm | kitty | terminal
+# auto: Warp > iTerm2 > Kitty > Terminal.app 순으로 자동 감지
 branch_terminal_app: "auto"
 
 # worktree 생성 위치 (현재 디렉토리 기준 상대경로)

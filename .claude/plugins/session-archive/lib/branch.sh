@@ -173,27 +173,125 @@ end tell
 EOF
 }
 
-# 자동 감지하여 터미널 열기
+# Warp에서 새 탭 열기
+open_warp_tab() {
+  local dir="$1"
+  local command="$2"
+
+  osascript << EOF
+tell application "Warp"
+  activate
+  tell application "System Events"
+    keystroke "t" using command down
+    delay 0.3
+    keystroke "cd '$dir' && $command"
+    key code 36  -- Enter
+  end tell
+end tell
+EOF
+}
+
+# Warp에서 새 창 열기
+open_warp_window() {
+  local dir="$1"
+  local command="$2"
+
+  osascript << EOF
+tell application "Warp"
+  activate
+  tell application "System Events"
+    keystroke "n" using command down
+    delay 0.3
+    keystroke "cd '$dir' && $command"
+    key code 36  -- Enter
+  end tell
+end tell
+EOF
+}
+
+# Kitty에서 새 탭 열기
+open_kitty_tab() {
+  local dir="$1"
+  local command="$2"
+
+  kitty @ launch --type=tab --cwd="$dir" --hold bash -c "$command"
+}
+
+# Kitty에서 새 창 열기
+open_kitty_window() {
+  local dir="$1"
+  local command="$2"
+
+  kitty @ launch --type=os-window --cwd="$dir" --hold bash -c "$command"
+}
+
+# config에서 터미널 앱 설정 읽기
+get_terminal_app() {
+  local config_file="$SCRIPT_DIR/../config.yaml"
+  if [ -f "$config_file" ]; then
+    local app=$(grep "^branch_terminal_app:" "$config_file" | sed 's/.*: *//' | tr -d '"' | tr -d "'")
+    echo "${app:-auto}"
+  else
+    echo "auto"
+  fi
+}
+
+# 터미널 앱 자동 감지
+detect_terminal_app() {
+  if [ -d "/Applications/Warp.app" ]; then
+    echo "warp"
+  elif [ -d "/Applications/iTerm.app" ]; then
+    echo "iterm"
+  elif command -v kitty &> /dev/null; then
+    echo "kitty"
+  else
+    echo "terminal"
+  fi
+}
+
+# 터미널 열기 (설정 기반)
 open_terminal() {
   local dir="$1"
   local command="$2"
   local mode="${3:-tab}"  # tab 또는 window
 
-  # iTerm2가 설치되어 있는지 확인
-  if [ -d "/Applications/iTerm.app" ]; then
-    if [ "$mode" = "window" ]; then
-      open_iterm_window "$dir" "$command"
-    else
-      open_iterm_tab "$dir" "$command"
-    fi
-  else
-    # Terminal.app 사용
-    if [ "$mode" = "window" ]; then
-      open_terminal_window "$dir" "$command"
-    else
-      open_terminal_tab "$dir" "$command"
-    fi
+  local app=$(get_terminal_app)
+
+  # auto면 자동 감지
+  if [ "$app" = "auto" ]; then
+    app=$(detect_terminal_app)
   fi
+
+  case "$app" in
+    warp)
+      if [ "$mode" = "window" ]; then
+        open_warp_window "$dir" "$command"
+      else
+        open_warp_tab "$dir" "$command"
+      fi
+      ;;
+    iterm|iterm2)
+      if [ "$mode" = "window" ]; then
+        open_iterm_window "$dir" "$command"
+      else
+        open_iterm_tab "$dir" "$command"
+      fi
+      ;;
+    kitty)
+      if [ "$mode" = "window" ]; then
+        open_kitty_window "$dir" "$command"
+      else
+        open_kitty_tab "$dir" "$command"
+      fi
+      ;;
+    terminal|*)
+      if [ "$mode" = "window" ]; then
+        open_terminal_window "$dir" "$command"
+      else
+        open_terminal_tab "$dir" "$command"
+      fi
+      ;;
+  esac
 }
 
 # =====================
