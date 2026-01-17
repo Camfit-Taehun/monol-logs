@@ -1,6 +1,36 @@
-# Session Archive Plugin v3.2
+# Session Archive Plugin v4.0
 
 Claude Code 세션을 프로젝트 내에 자동 저장 + 로드맵/요약/인덱스/브랜치
+
+## 설치 (Claude Code 플러그인)
+
+```bash
+# 1. 레포 클론
+git clone https://github.com/your/monol-logs.git ~/monol-logs
+
+# 2. ~/.claude/settings.json에 마켓플레이스 등록
+```
+
+`~/.claude/settings.json`:
+```json
+{
+  "extraKnownMarketplaces": {
+    "monol-logs": {
+      "source": {
+        "source": "directory",
+        "path": "~/monol-logs/.claude/plugins"
+      }
+    }
+  },
+  "enabledPlugins": {
+    "session-archive@monol-logs": true
+  }
+}
+```
+
+플러그인 활성화 후 자동으로:
+- `/sessions`, `/export`, `/roadmap`, `/summary`, `/branch` 스킬 사용 가능
+- SessionEnd, PreCompact 훅 자동 등록
 
 ## 스킬 (Commands)
 
@@ -24,12 +54,6 @@ Claude Code 세션을 프로젝트 내에 자동 저장 + 로드맵/요약/인�
 /branch <name>           # 세션 분기 → git worktree + 새 터미널
 /branch <name> --same-dir # 같은 폴더에서 세션만 분기
 /branch --branches       # 분기 기록
-```
-
-## 설치
-
-```bash
-./scripts/setup.sh
 ```
 
 ## 자동 동작 (SessionEnd 훅)
@@ -104,28 +128,22 @@ export ANTHROPIC_API_KEY="sk-..."
 ## 파일 구조
 
 ```
-.claude/plugins/session-archive/
-├── commands/
-│   ├── sessions.md          # /sessions 스킬
-│   ├── export.md            # /export 스킬
-│   ├── roadmap.md           # /roadmap 스킬
-│   ├── summary.md           # /summary 스킬
-│   └── branch.md            # /branch 스킬
-├── hooks/
-│   ├── on-session-end.sh    # 세션 종료 훅
-│   └── on-pre-compact.sh    # 압축 전 훅
-├── scripts/
-│   ├── setup.sh             # 설치
-│   ├── export-session.sh    # 수동 내보내기
-│   ├── extract-roadmap.sh   # 로드맵 추출
-│   ├── generate-summary.sh  # 요약 생성
-│   ├── update-index.sh      # 인덱스 업데이트
-│   └── session-branch.sh    # 세션 브랜치 스크립트
-├── lib/
-│   ├── utils.sh             # 공통 유틸
-│   ├── roadmap.sh           # 로드맵 유틸
-│   ├── summary.sh           # 요약 유틸
-│   └── branch.sh            # 브랜치 유틸
-├── config.yaml              # 설정
-└── CLAUDE.md                # 이 파일
+.claude/plugins/
+├── marketplace.json           # 마켓플레이스 정의
+└── session-archive/
+    ├── plugin.json            # 플러그인 매니페스트
+    ├── commands/
+    │   ├── sessions.md        # /sessions 스킬
+    │   ├── export.md          # /export 스킬
+    │   ├── roadmap.md         # /roadmap 스킬
+    │   ├── summary.md         # /summary 스킬
+    │   └── branch.md          # /branch 스킬
+    ├── hooks/
+    │   ├── hooks.json         # 훅 정의
+    │   ├── on-session-end.sh  # 세션 종료 훅
+    │   └── on-pre-compact.sh  # 압축 전 훅
+    ├── scripts/               # 수동 스크립트 (선택)
+    ├── lib/                   # 공통 유틸
+    ├── config.yaml            # 설정
+    └── CLAUDE.md              # 이 파일
 ```

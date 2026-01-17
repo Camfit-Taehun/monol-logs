@@ -1,6 +1,6 @@
 # monol-logs
 
-Claude Code 세션 아카이브 플러그인 v3.2
+Claude Code 세션 아카이브 플러그인 v4.0
 
 > **"모든 AI 대화를 프로젝트 자산으로"**
 
@@ -49,40 +49,47 @@ Claude Code는 세션을 `~/.claude/projects/` 아래에 저장하지만:
 ## 구조
 
 ```
-.claude/plugins/session-archive/
-├── CLAUDE.md
-├── config.yaml
-├── commands/
-│   ├── sessions.md           # /sessions 스킬
-│   ├── export.md             # /export 스킬
-│   ├── roadmap.md            # /roadmap 스킬
-│   ├── summary.md            # /summary 스킬
-│   └── branch.md             # /branch 스킬
-├── hooks/
-│   ├── on-session-end.sh     # SessionEnd 훅
-│   └── on-pre-compact.sh     # PreCompact 훅
-├── scripts/
-│   ├── setup.sh              # 설치
-│   ├── export-session.sh     # 수동 내보내기
-│   ├── extract-roadmap.sh    # 로드맵 추출
-│   ├── generate-summary.sh   # 요약 생성
-│   ├── update-index.sh       # 인덱스 업데이트
-│   └── session-branch.sh     # 세션 브랜치 스크립트
-└── lib/
-    ├── utils.sh              # 공통 유틸
-    ├── roadmap.sh            # 로드맵 유틸
-    ├── summary.sh            # 요약 유틸
-    └── branch.sh             # 브랜치 유틸
+.claude/plugins/
+├── marketplace.json           # 마켓플레이스 정의
+└── session-archive/
+    ├── plugin.json            # 플러그인 매니페스트
+    ├── commands/              # 스킬 정의
+    ├── hooks/                 # 훅 정의 + 스크립트
+    ├── scripts/               # 수동 스크립트
+    ├── lib/                   # 공통 유틸
+    └── config.yaml            # 설정
 ```
 
 ## 설치
 
+### 방법 1: Claude Code 플러그인 (권장)
+
 ```bash
 # 1. 레포 클론
-git clone https://github.com/your/monol-logs.git ~/Work/kent-labs/monol-logs
+git clone https://github.com/your/monol-logs.git ~/monol-logs
+```
 
-# 2. 설치 스크립트 실행
-~/Work/kent-labs/monol-logs/.claude/plugins/session-archive/scripts/setup.sh
+`~/.claude/settings.json`에 추가:
+```json
+{
+  "extraKnownMarketplaces": {
+    "monol-logs": {
+      "source": {
+        "source": "directory",
+        "path": "~/monol-logs/.claude/plugins"
+      }
+    }
+  },
+  "enabledPlugins": {
+    "session-archive@monol-logs": true
+  }
+}
+```
+
+### 방법 2: 수동 설치 (레거시)
+
+```bash
+~/monol-logs/.claude/plugins/session-archive/scripts/setup.sh
 ```
 
 ## 사용법
