@@ -1,6 +1,6 @@
 # monol-logs
 
-Claude Code 세션 아카이브 플러그인 v3.0
+Claude Code 세션 아카이브 플러그인 v3.1
 
 > **"모든 AI 대화를 프로젝트 자산으로"**
 
@@ -39,12 +39,18 @@ Claude Code는 세션을 `~/.claude/projects/` 아래에 저장하지만:
 - git worktree 자동 생성 + 새 터미널 열기
 - 대화 컨텍스트 유지하며 새 작업 시작
 
+### 6. /branch 스킬 (v3.1)
+- Claude Code 안에서 `/branch` 명령으로 세션 분기
+- 터미널 스크립트 없이 바로 사용 가능
+
 ## 구조
 
 ```
 .claude/plugins/session-archive/
 ├── CLAUDE.md
 ├── config.yaml
+├── commands/
+│   └── branch.md             # /branch 스킬 (v3.1)
 ├── hooks/
 │   ├── on-session-end.sh     # SessionEnd 훅
 │   └── on-pre-compact.sh     # PreCompact 훅
@@ -54,12 +60,12 @@ Claude Code는 세션을 `~/.claude/projects/` 아래에 저장하지만:
 │   ├── extract-roadmap.sh    # 로드맵 추출
 │   ├── generate-summary.sh   # 요약 생성
 │   ├── update-index.sh       # 인덱스 업데이트
-│   └── session-branch.sh     # 세션 브랜치 (v3.0)
+│   └── session-branch.sh     # 세션 브랜치 스크립트
 └── lib/
     ├── utils.sh              # 공통 유틸
     ├── roadmap.sh            # 로드맵 유틸
     ├── summary.sh            # 요약 유틸
-    └── branch.sh             # 브랜치 유틸 (v3.0)
+    └── branch.sh             # 브랜치 유틸
 ```
 
 ## 설치
@@ -73,6 +79,15 @@ git clone https://github.com/your/monol-logs.git ~/Work/kent-labs/monol-logs
 ```
 
 ## 사용법
+
+### /branch 스킬 (Claude Code 안에서)
+
+```
+/branch feature-login        # git worktree + 새 터미널에서 분기
+/branch experiment --same-dir # 같은 폴더에서 세션만 분기
+/branch --list               # 세션 목록
+/branch --branches           # 분기 기록
+```
 
 ### 자동 저장 (설치 후 자동)
 
