@@ -1,3 +1,11 @@
+---
+description: 세션 내보내기 - 프로젝트 내 .claude/sessions/로 백업
+use_when:
+  - 사용자가 "내보내기", "export", "백업", "저장" 등을 언급할 때
+  - 세션을 프로젝트에 보관하고 싶을 때
+  - 세션을 git에 포함시키고 싶을 때
+---
+
 # /export - 세션 내보내기
 
 현재 또는 지정된 Claude Code 세션을 프로젝트 내 `.claude/sessions/`로 내보냅니다.
