@@ -13,7 +13,8 @@ source "$SCRIPT_DIR/utils.sh"
 get_project_hash() {
   local project_dir="${1:-$(pwd)}"
   # /Users/kent/Work/project → -Users-kent-Work-project
-  echo "$project_dir" | tr '/' '-' | sed 's/^-//'
+  # 앞의 -를 유지해야 함 (Claude Code 실제 동작)
+  echo "$project_dir" | tr '/' '-'
 }
 
 # Claude Code 세션 디렉토리 경로
@@ -88,14 +89,14 @@ create_worktree() {
   # 브랜치가 이미 존재하는지 확인
   if git show-ref --verify --quiet "refs/heads/$branch_name"; then
     # 기존 브랜치 사용
-    git worktree add "$worktree_path" "$branch_name"
+    git worktree add "$worktree_path" "$branch_name" >&2
   else
     # 새 브랜치 생성
-    git worktree add -b "$branch_name" "$worktree_path" "$base_branch"
+    git worktree add -b "$branch_name" "$worktree_path" "$base_branch" >&2
   fi
 
   if [ $? -eq 0 ]; then
-    # 절대 경로 반환
+    # 절대 경로 반환 (stdout으로만)
     cd "$worktree_path" && pwd
   else
     return 1
