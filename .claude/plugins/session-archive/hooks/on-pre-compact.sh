@@ -1,6 +1,7 @@
 #!/bin/bash
-# Session Archive - SessionEnd Hook
-# 세션 종료 시 자동으로 세션 파일을 프로젝트 내에 백업
+# Session Archive - PreCompact Hook
+# 컨텍스트 압축 전에 현재 세션 상태를 백업
+# 압축 후에는 대화 내용이 요약되므로, 원본 보존을 위해 이 시점에 저장
 
 set -e
 
@@ -20,43 +21,42 @@ TRANSCRIPT_PATH=$(echo "$input" | jq -r '.transcript_path // empty')
 # 검증
 if [ -z "$SESSION_ID" ]; then
   log "ERROR" "session_id not found in input"
-  exit 1
+  exit 0  # 에러여도 컴팩트는 진행되어야 함
 fi
 
 if [ -z "$TRANSCRIPT_PATH" ] || [ ! -f "$TRANSCRIPT_PATH" ]; then
   log "ERROR" "transcript not found: $TRANSCRIPT_PATH"
-  exit 1
+  exit 0
 fi
 
 # 프로젝트 디렉토리 확인
 if [ -z "$CLAUDE_PROJECT_DIR" ]; then
   log "ERROR" "CLAUDE_PROJECT_DIR not set"
-  exit 1
+  exit 0
 fi
 
 # 백업 디렉토리
 BACKUP_DIR=$(get_backup_dir)
 mkdir -p "$BACKUP_DIR"
 
-# 파일명 생성
-FILENAME=$(generate_filename "$SESSION_ID")
-
-# 기존 precompact 파일 확인 (있으면 최종본으로 대체)
+# 파일명 생성 (pre-compact임을 표시)
+TIMESTAMP=$(date +%Y-%m-%d_%H%M)
 SHORT_ID="${SESSION_ID:0:8}"
-PRECOMPACT_FILE=$(find "$BACKUP_DIR" -name "*_precompact_${SHORT_ID}.jsonl" 2>/dev/null | head -1)
-if [ -n "$PRECOMPACT_FILE" ]; then
-  # precompact 파일 삭제 (최종본으로 대체될 것이므로)
-  rm -f "$PRECOMPACT_FILE"
-  log "INFO" "Removed precompact backup: $PRECOMPACT_FILE"
+FILENAME="${TIMESTAMP}_precompact_${SHORT_ID}.jsonl"
+
+# 이미 같은 세션의 precompact 백업이 있는지 확인
+EXISTING=$(find "$BACKUP_DIR" -name "*_precompact_${SHORT_ID}.jsonl" 2>/dev/null | head -1)
+if [ -n "$EXISTING" ]; then
+  # 기존 파일 덮어쓰기 (항상 최신 상태 유지)
+  FILENAME=$(basename "$EXISTING")
 fi
 
 # 복사
 if copy_session "$TRANSCRIPT_PATH" "$BACKUP_DIR/$FILENAME"; then
-  log "INFO" "Session archived: $BACKUP_DIR/$FILENAME"
+  log "INFO" "Pre-compact backup: $BACKUP_DIR/$FILENAME"
   print_session_stats "$BACKUP_DIR/$FILENAME" >&2
 else
-  log "ERROR" "Failed to archive session"
-  exit 1
+  log "ERROR" "Failed to backup session"
 fi
 
 exit 0

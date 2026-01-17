@@ -1,0 +1,8 @@
+# Claude Code local settings
+.claude/settings.local.json
+
+# Sessions (stored per-project, shouldn't be in this plugin repo)
+.claude/sessions/
+
+# macOS
+.DS_Store
