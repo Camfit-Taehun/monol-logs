@@ -178,11 +178,14 @@ EOF
 open_warp_tab() {
   local dir="$1"
   local command="$2"
+  local tab_name="${3:-$(basename "$dir")}"
 
   # 임시 스크립트 생성 (macOS mktemp)
   local tmp_script=$(mktemp -t warp_cmd).sh
   cat > "$tmp_script" << SCRIPT
 #!/bin/bash
+# 탭 이름 설정
+echo -ne "\033]0;$tab_name\007"
 cd '$dir'
 $command
 SCRIPT
@@ -199,11 +202,14 @@ SCRIPT
 open_warp_window() {
   local dir="$1"
   local command="$2"
+  local tab_name="${3:-$(basename "$dir")}"
 
   # 임시 스크립트 생성 (macOS mktemp)
   local tmp_script=$(mktemp -t warp_cmd).sh
   cat > "$tmp_script" << SCRIPT
 #!/bin/bash
+# 탭 이름 설정
+echo -ne "\033]0;$tab_name\007"
 cd '$dir'
 $command
 SCRIPT
@@ -273,6 +279,7 @@ open_terminal() {
   local dir="$1"
   local command="$2"
   local mode="${3:-tab}"  # tab 또는 window
+  local tab_name="${4:-$(basename "$dir")}"
 
   local app=$(get_terminal_app)
 
@@ -290,9 +297,9 @@ open_terminal() {
   case "$app" in
     warp)
       if [ "$mode" = "window" ]; then
-        open_warp_window "$dir" "$command"
+        open_warp_window "$dir" "$command" "$tab_name"
       else
-        open_warp_tab "$dir" "$command"
+        open_warp_tab "$dir" "$command" "$tab_name"
       fi
       ;;
     iterm|iterm2)
@@ -457,7 +464,7 @@ branch_session() {
     # 자동 모드: 새 터미널 열기
     echo ""
     echo "Opening new terminal..."
-    open_terminal "$target_dir" "$claude_cmd" "tab"
+    open_terminal "$target_dir" "$claude_cmd" "tab" "$branch_name"
     echo ""
     echo "=== Branch created ==="
     echo "Directory: $target_dir"
