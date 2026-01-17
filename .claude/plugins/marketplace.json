@@ -1,6 +1,6 @@
 {
   "name": "monol",
-  "description": "Claude Code 세션 아카이브 플러그인 마켓플레이스",
+  "description": "Monol Work Tools",
   "plugins": [
     {
       "name": "monol-logs",

@@ -1,18 +1,18 @@
 {
   "$schema": "https://anthropic.com/claude-code/marketplace.schema.json",
   "name": "monol",
-  "description": "Claude Code 세션 아카이브 플러그인 마켓플레이스",
+  "description": "Monol Work Tools",
   "owner": {
-    "name": "kent-labs",
-    "email": "kent@example.com"
+    "name": "monol",
+    "email": "kent@monol.io"
   },
   "plugins": [
     {
       "name": "monol-logs",
       "description": "세션 자동 저장, 로드맵/요약/인덱스, 세션 브랜치",
       "author": {
-        "name": "kent-labs",
-        "email": "kent@example.com"
+        "name": "monol",
+        "email": "kent@monol.io"
       },
       "source": "./monol-logs",
       "category": "productivity"
