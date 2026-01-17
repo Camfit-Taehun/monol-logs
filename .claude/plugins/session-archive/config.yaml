@@ -1,16 +1,92 @@
 # Session Archive Plugin Configuration
+# 세션 아카이브 플러그인 설정
+
+# =====================
+# 기본 설정
+# =====================
 
 # 저장 위치 (프로젝트 기준 상대 경로)
 output_dir: ".claude/sessions"
 
 # 파일명 형식
-filename_format: "{date}_{time}_{session_id}"
+filename_format: "{date}_{time}_{topic}_{session_id}"
 
-# 요약 생성 여부 (TODO)
-generate_summary: false
+# 상세 로그 출력
+verbose: false
 
-# 인덱스 자동 업데이트 (TODO)
-update_index: false
+# =====================
+# 로드맵 설정
+# =====================
 
-# 최대 보관 기간 (일, 0=무제한) (TODO)
+# 로드맵 추출 활성화
+roadmap_enabled: true
+
+# 통합 로드맵 파일명
+roadmap_file: "roadmap.md"
+
+# 세션별 로드맵 파일 생성
+roadmap_per_session: true
+
+# TODO 추출 패턴 (정규식)
+# 기본 패턴: - [ ], TODO:, FIXME:, 다음에, 나중에, 할 일
+roadmap_patterns:
+  - '- \[ \]'
+  - 'TODO:'
+  - 'FIXME:'
+  - '다음에'
+  - '나중에'
+  - '할 일'
+  - '해야 할'
+  - '구현 예정'
+
+# =====================
+# 요약 설정
+# =====================
+
+# 요약 생성 활성화
+summary_enabled: true
+
+# 세션별 요약 파일 생성
+summary_per_session: true
+
+# AI 요약 사용 (false면 규칙 기반)
+summary_use_ai: true
+
+# AI 모델 (claude-sonnet-4-20250514, claude-3-haiku-20240307 등)
+summary_model: "claude-sonnet-4-20250514"
+
+# 요약에 포함할 최대 메시지 수
+summary_max_messages: 50
+
+# API 키 (환경변수 ANTHROPIC_API_KEY 우선)
+# anthropic_api_key: "sk-..."
+
+# =====================
+# 인덱스 설정
+# =====================
+
+# 인덱스 자동 업데이트
+index_enabled: true
+
+# 인덱스 파일명
+index_file: "index.md"
+
+# =====================
+# 토픽 설정
+# =====================
+
+# 토픽 자동 추출
+topic_auto_extract: true
+
+# 첫 번째 메시지에서 토픽 추출
+topic_from_first_message: true
+
+# =====================
+# 보관 정책
+# =====================
+
+# 최대 보관 기간 (일, 0=무제한)
 retention_days: 0
+
+# 최대 세션 수 (0=무제한)
+retention_max_sessions: 0

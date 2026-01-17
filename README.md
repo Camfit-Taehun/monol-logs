@@ -1,6 +1,6 @@
 # monol-logs
 
-Claude Code 세션 아카이브 플러그인
+Claude Code 세션 아카이브 플러그인 v2.0
 
 > **"모든 AI 대화를 프로젝트 자산으로"**
 
@@ -11,29 +11,48 @@ Claude Code는 세션을 `~/.claude/projects/` 아래에 저장하지만:
 - **식별 불가** - `f6702810-b552-4a0c-9a93-053c8d44d240.jsonl` 같은 UUID
 - **버전 관리 외부** - 프로젝트 git에 포함되지 않음
 
-이 플러그인은 세션을 **프로젝트 내부에 자동 저장**합니다.
+이 플러그인은 세션을 **프로젝트 내부에 자동 저장**하고, **로드맵/요약/인덱스**를 자동 생성합니다.
 
-## 기능
+## 핵심 기능
 
+### 1. 세션 자동 저장
 - **SessionEnd 훅**: 세션 종료 시 자동 백업
 - **PreCompact 훅**: 컨텍스트 압축 전 원본 보존
-- **수동 내보내기**: 원하는 시점에 세션 저장
 - **식별 가능한 파일명**: `2026-01-18_1430_f6702810.jsonl`
+
+### 2. 로드맵 관리 (v2.0)
+- 세션에서 TODO/할 일 자동 추출
+- 통합 `roadmap.md` 관리
+- 세션별 `.roadmap.md` 생성
+
+### 3. AI 요약 (v2.0)
+- Claude API로 세션 요약 자동 생성
+- 주요 작업, 결정사항, 다음 할 일 추출
+- 세션별 `.summary.md` 생성
+
+### 4. 세션 인덱스 (v2.0)
+- 전체 세션 목록 `index.md` 자동 생성
+- 날짜, 토픽, 메시지 수, 크기 등 메타데이터
 
 ## 구조
 
 ```
 .claude/plugins/session-archive/
-├── CLAUDE.md              # 플러그인 설명
-├── config.yaml            # 설정
+├── CLAUDE.md
+├── config.yaml           # 설정 (로드맵, 요약, 인덱스 옵션)
 ├── hooks/
-│   ├── on-session-end.sh  # SessionEnd 훅
-│   └── on-pre-compact.sh  # PreCompact 훅
+│   ├── on-session-end.sh # SessionEnd 훅 (+로드맵, 요약, 인덱스)
+│   └── on-pre-compact.sh # PreCompact 훅
 ├── scripts/
-│   ├── setup.sh           # 설치 스크립트
-│   └── export-session.sh  # 수동 내보내기
+│   ├── setup.sh          # 설치 스크립트
+│   ├── export-session.sh # 수동 내보내기
+│   ├── extract-roadmap.sh    # 로드맵 추출
+│   ├── generate-summary.sh   # 요약 생성
+│   └── update-index.sh       # 인덱스 업데이트
 └── lib/
-    └── utils.sh           # 공통 유틸
+    ├── utils.sh          # 공통 유틸
+    ├── roadmap.sh        # 로드맵 유틸
+    └── summary.sh        # 요약 유틸
 ```
 
 ## 설치
@@ -46,78 +65,82 @@ git clone https://github.com/your/monol-logs.git ~/Work/kent-labs/monol-logs
 ~/Work/kent-labs/monol-logs/.claude/plugins/session-archive/scripts/setup.sh
 ```
 
-설치 후 자동으로:
-- `~/.claude/plugins/session-archive`에 심볼릭 링크 생성
-- `~/.claude/settings.json`에 hooks 설정 추가
-
 ## 사용법
 
 ### 자동 저장 (설치 후 자동)
 
-세션 종료 시 자동으로 저장됩니다:
+세션 종료 시 자동으로:
+1. 세션 파일 저장
+2. TODO/로드맵 추출
+3. AI 요약 생성 (백그라운드)
+4. 인덱스 업데이트
+
 ```
-$PROJECT/.claude/sessions/2026-01-18_1430_f6702810.jsonl
+$PROJECT/.claude/sessions/
+├── index.md                          # 세션 목록
+├── roadmap.md                        # 통합 TODO
+├── 2026-01-18_1430_f6702810.jsonl    # 세션 원본
+├── 2026-01-18_1430_f6702810.summary.md   # AI 요약
+└── 2026-01-18_1430_f6702810.roadmap.md   # 세션별 TODO
 ```
 
-### 수동 내보내기
+### 수동 명령어
 
 ```bash
-# 최근 세션 내보내기
-export-session.sh
+# 세션 내보내기
+export-session.sh                     # 최근 세션
+export-session.sh f6702810 "topic"    # 토픽 지정
 
-# 특정 세션 (세션 ID 앞부분)
-export-session.sh f6702810
+# 로드맵 관리
+extract-roadmap.sh                    # 최근 세션 TODO 추출
+extract-roadmap.sh --all              # 모든 세션 TODO 추출
+extract-roadmap.sh --show             # roadmap.md 보기
 
-# 토픽 이름 지정
-export-session.sh f6702810 "feature-auth"
-# → 2026-01-18_1430_feature-auth_f6702810.jsonl
+# 요약 생성
+generate-summary.sh                   # 최근 세션 AI 요약
+generate-summary.sh --rule-based      # API 없이 규칙 기반
 
-# 사용 가능한 세션 목록
-export-session.sh --list
-
-# 이미 저장된 세션 목록
-export-session.sh --list-archived
+# 인덱스 업데이트
+update-index.sh                       # index.md 갱신
+update-index.sh --show                # index.md 보기
 ```
 
 ## 설정
 
-`config.yaml`에서 커스터마이즈:
+`config.yaml`:
 
 ```yaml
-# 저장 위치 (프로젝트 기준 상대 경로)
+# 기본
 output_dir: ".claude/sessions"
+verbose: false
 
-# 요약 생성 (TODO)
-generate_summary: false
+# 로드맵
+roadmap_enabled: true
+roadmap_per_session: true
 
-# 인덱스 자동 업데이트 (TODO)
-update_index: false
+# 요약 (AI)
+summary_enabled: true
+summary_use_ai: true
+# API 키: 환경변수 ANTHROPIC_API_KEY 또는 여기에 설정
 
-# 최대 보관 기간 (일, 0=무제한) (TODO)
-retention_days: 0
+# 인덱스
+index_enabled: true
 ```
 
-## 다른 컴퓨터에서 사용
+## API 키 설정
+
+AI 요약 기능을 사용하려면:
 
 ```bash
-# 1. 레포 클론
-git clone https://github.com/your/monol-logs.git ~/Work/kent-labs/monol-logs
+# 방법 1: 환경변수
+export ANTHROPIC_API_KEY="sk-..."
 
-# 2. 설치
-~/Work/kent-labs/monol-logs/.claude/plugins/session-archive/scripts/setup.sh
+# 방법 2: config.yaml
+anthropic_api_key: "sk-..."
 
-# 끝!
+# 방법 3: macOS 키체인
+security add-generic-password -s "anthropic-api-key" -a "$USER" -w "sk-..."
 ```
-
-## 로드맵
-
-- [x] SessionEnd 훅
-- [x] PreCompact 훅
-- [x] 수동 내보내기
-- [ ] 세션 요약 자동 생성 (`.summary.md`)
-- [ ] 세션 인덱스 자동 관리 (`index.md`)
-- [ ] 토픽 자동 추출 (AI 기반)
-- [ ] 보관 정책 (오래된 세션 정리)
 
 ## 라이선스
 

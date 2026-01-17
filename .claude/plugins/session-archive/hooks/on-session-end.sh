@@ -1,6 +1,7 @@
 #!/bin/bash
 # Session Archive - SessionEnd Hook
 # 세션 종료 시 자동으로 세션 파일을 프로젝트 내에 백업
+# + 로드맵 추출, 요약 생성, 인덱스 업데이트
 
 set -e
 
@@ -50,13 +51,44 @@ if [ -n "$PRECOMPACT_FILE" ]; then
   log "INFO" "Removed precompact backup: $PRECOMPACT_FILE"
 fi
 
-# 복사
-if copy_session "$TRANSCRIPT_PATH" "$BACKUP_DIR/$FILENAME"; then
-  log "INFO" "Session archived: $BACKUP_DIR/$FILENAME"
-  print_session_stats "$BACKUP_DIR/$FILENAME" >&2
+# 1. 세션 파일 복사
+ARCHIVED_FILE="$BACKUP_DIR/$FILENAME"
+if copy_session "$TRANSCRIPT_PATH" "$ARCHIVED_FILE"; then
+  log "INFO" "Session archived: $ARCHIVED_FILE"
+  print_session_stats "$ARCHIVED_FILE" >&2
 else
   log "ERROR" "Failed to archive session"
   exit 1
+fi
+
+# 2. 로드맵 추출 (설정에 따라)
+ROADMAP_ENABLED=$(get_config_value "roadmap_enabled" "true")
+if [ "$ROADMAP_ENABLED" = "true" ]; then
+  log "INFO" "Extracting roadmap..."
+  if "$PLUGIN_DIR/scripts/extract-roadmap.sh" "$ARCHIVED_FILE" 2>&1; then
+    log "INFO" "Roadmap extracted"
+  else
+    log "WARN" "Roadmap extraction failed (non-fatal)"
+  fi
+fi
+
+# 3. 요약 생성 (설정에 따라, 백그라운드)
+SUMMARY_ENABLED=$(get_config_value "summary_enabled" "true")
+if [ "$SUMMARY_ENABLED" = "true" ]; then
+  log "INFO" "Generating summary (background)..."
+  # 백그라운드로 실행 (세션 종료 지연 방지)
+  nohup "$PLUGIN_DIR/scripts/generate-summary.sh" "$ARCHIVED_FILE" > /dev/null 2>&1 &
+fi
+
+# 4. 인덱스 업데이트 (설정에 따라)
+INDEX_ENABLED=$(get_config_value "index_enabled" "true")
+if [ "$INDEX_ENABLED" = "true" ]; then
+  log "INFO" "Updating index..."
+  if "$PLUGIN_DIR/scripts/update-index.sh" 2>&1; then
+    log "INFO" "Index updated"
+  else
+    log "WARN" "Index update failed (non-fatal)"
+  fi
 fi
 
 exit 0

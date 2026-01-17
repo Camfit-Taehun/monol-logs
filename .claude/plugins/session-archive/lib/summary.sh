@@ -1,0 +1,264 @@
+#!/bin/bash
+# Session Archive - Summary Utilities
+# AI 기반 세션 요약 생성
+
+SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
+source "$SCRIPT_DIR/utils.sh"
+
+# Claude API 설정
+CLAUDE_API_URL="https://api.anthropic.com/v1/messages"
+CLAUDE_MODEL="claude-sonnet-4-20250514"
+MAX_TOKENS=2000
+
+# API 키 가져오기
+get_api_key() {
+  # 1. 환경변수에서
+  if [ -n "$ANTHROPIC_API_KEY" ]; then
+    echo "$ANTHROPIC_API_KEY"
+    return
+  fi
+
+  # 2. config에서
+  local config_key=$(get_config_value "anthropic_api_key" "")
+  if [ -n "$config_key" ]; then
+    echo "$config_key"
+    return
+  fi
+
+  # 3. 키체인에서 (macOS)
+  if command -v security &> /dev/null; then
+    local keychain_key=$(security find-generic-password -s "anthropic-api-key" -w 2>/dev/null || echo "")
+    if [ -n "$keychain_key" ]; then
+      echo "$keychain_key"
+      return
+    fi
+  fi
+
+  echo ""
+}
+
+# 세션 JSONL에서 대화 내용 추출 (요약용)
+extract_conversation() {
+  local session_file="$1"
+  local max_messages="${2:-50}"  # 최근 N개 메시지만
+
+  if [ ! -f "$session_file" ]; then
+    echo "File not found: $session_file" >&2
+    return 1
+  fi
+
+  # user와 assistant 메시지 추출
+  tail -n 500 "$session_file" | \
+    grep -E '"type":"(user|assistant)"' | \
+    tail -n "$max_messages" | \
+    jq -r '
+      if .message.content then
+        if .type == "user" then
+          "User: " + (.message.content | tostring)
+        else
+          "Assistant: " + (
+            if .message.content | type == "array" then
+              (.message.content | map(select(.type == "text") | .text) | join("\n"))
+            else
+              (.message.content | tostring)
+            end
+          )
+        end
+      else
+        empty
+      end
+    ' 2>/dev/null | \
+    head -c 50000  # 최대 50KB
+}
+
+# 세션 메타데이터 추출
+extract_session_metadata() {
+  local session_file="$1"
+
+  local basename=$(basename "$session_file" .jsonl)
+  local session_date=$(echo "$basename" | cut -d'_' -f1)
+  local session_time=$(echo "$basename" | cut -d'_' -f2)
+  local session_id=$(echo "$basename" | rev | cut -d'_' -f1 | rev)
+
+  # 파일 통계
+  local total_lines=$(wc -l < "$session_file" | tr -d ' ')
+  local user_msgs=$(grep -c '"type":"user"' "$session_file" 2>/dev/null || echo "0")
+  local assistant_msgs=$(grep -c '"type":"assistant"' "$session_file" 2>/dev/null || echo "0")
+  local file_size=$(ls -lh "$session_file" | awk '{print $5}')
+
+  cat << EOF
+Date: $session_date
+Time: $session_time
+Session ID: $session_id
+Messages: User=$user_msgs, Assistant=$assistant_msgs
+Size: $file_size
+EOF
+}
+
+# Claude API 호출
+call_claude_api() {
+  local prompt="$1"
+  local api_key=$(get_api_key)
+
+  if [ -z "$api_key" ]; then
+    echo "API key not found. Set ANTHROPIC_API_KEY or add to config.yaml" >&2
+    return 1
+  fi
+
+  local response=$(curl -s -X POST "$CLAUDE_API_URL" \
+    -H "Content-Type: application/json" \
+    -H "x-api-key: $api_key" \
+    -H "anthropic-version: 2023-06-01" \
+    -d "$(jq -n \
+      --arg model "$CLAUDE_MODEL" \
+      --argjson max_tokens "$MAX_TOKENS" \
+      --arg prompt "$prompt" \
+      '{
+        model: $model,
+        max_tokens: $max_tokens,
+        messages: [
+          {
+            role: "user",
+            content: $prompt
+          }
+        ]
+      }'
+    )")
+
+  # 에러 체크
+  local error=$(echo "$response" | jq -r '.error.message // empty')
+  if [ -n "$error" ]; then
+    echo "API Error: $error" >&2
+    return 1
+  fi
+
+  # 응답 추출
+  echo "$response" | jq -r '.content[0].text // empty'
+}
+
+# 세션 요약 생성 프롬프트
+generate_summary_prompt() {
+  local metadata="$1"
+  local conversation="$2"
+
+  cat << EOF
+다음 Claude Code 세션 대화를 분석하여 마크다운 형식으로 요약해주세요.
+
+## 세션 정보
+$metadata
+
+## 대화 내용
+$conversation
+
+---
+
+다음 형식으로 요약해주세요 (한국어로):
+
+# Session Summary
+
+## 주요 작업
+- (이 세션에서 수행한 주요 작업들을 3-5개 bullet point로)
+
+## 결정사항
+- (이 세션에서 내린 중요한 결정들)
+
+## 생성/수정된 파일
+- (파일 경로와 간단한 설명)
+
+## 다음 할 일
+- [ ] (이 세션에서 언급된 TODO나 다음 단계)
+
+## 키워드
+(이 세션의 주요 키워드 3-5개, 쉼표로 구분)
+EOF
+}
+
+# 세션 요약 파일 경로
+get_summary_file() {
+  local session_file="$1"
+  local basename=$(basename "$session_file" .jsonl)
+
+  echo "$(dirname "$session_file")/${basename}.summary.md"
+}
+
+# AI 기반 세션 요약 생성
+generate_ai_summary() {
+  local session_file="$1"
+
+  if [ ! -f "$session_file" ]; then
+    echo "Session file not found: $session_file" >&2
+    return 1
+  fi
+
+  log "INFO" "Generating AI summary for: $(basename "$session_file")"
+
+  # 메타데이터 추출
+  local metadata=$(extract_session_metadata "$session_file")
+
+  # 대화 내용 추출
+  local conversation=$(extract_conversation "$session_file")
+
+  if [ -z "$conversation" ]; then
+    echo "No conversation found in session" >&2
+    return 1
+  fi
+
+  # 프롬프트 생성
+  local prompt=$(generate_summary_prompt "$metadata" "$conversation")
+
+  # API 호출
+  local summary=$(call_claude_api "$prompt")
+
+  if [ -z "$summary" ]; then
+    echo "Failed to generate summary" >&2
+    return 1
+  fi
+
+  echo "$summary"
+}
+
+# 요약 파일 저장
+save_summary() {
+  local session_file="$1"
+  local summary="$2"
+
+  local summary_file=$(get_summary_file "$session_file")
+
+  # 헤더 추가
+  cat > "$summary_file" << EOF
+<!-- Auto-generated by session-archive plugin -->
+<!-- Session: $(basename "$session_file") -->
+<!-- Generated: $(date +%Y-%m-%d\ %H:%M:%S) -->
+
+$summary
+EOF
+
+  echo "$summary_file"
+}
+
+# 규칙 기반 요약 (API 없이)
+generate_rule_based_summary() {
+  local session_file="$1"
+
+  local metadata=$(extract_session_metadata "$session_file")
+  local basename=$(basename "$session_file" .jsonl)
+
+  # 첫 번째 사용자 메시지 (토픽 추정)
+  local first_msg=$(grep '"type":"user"' "$session_file" | head -1 | \
+    jq -r '.message.content // empty' 2>/dev/null | head -c 200)
+
+  # TODO 패턴 추출
+  local todos=$(grep -E '- \[ \]|TODO:|다음에|나중에' "$session_file" 2>/dev/null | head -10)
+
+  cat << EOF
+# Session Summary
+
+$metadata
+
+## First Message
+$first_msg
+
+## Extracted TODOs
+$todos
+EOF
+}
