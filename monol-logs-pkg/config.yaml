@@ -102,6 +102,28 @@ branch_worktree_dir: ".."
 branch_registry_file: "branches.md"
 
 # =====================
+# 시각화 설정 (v4.4)
+# =====================
+
+# 기본 출력 형식: ascii | md | html
+visualize_default_format: "ascii"
+
+# 기본 날짜 범위 (일)
+visualize_default_days: 7
+
+# HTML 테마: dark | light
+visualize_html_theme: "dark"
+
+# HTML 생성 후 자동 열기
+visualize_auto_open: false
+
+# 마크다운 출력 파일명
+visualize_md_file: "visualization.md"
+
+# HTML 출력 파일명
+visualize_html_file: "dashboard.html"
+
+# =====================
 # 보관 정책
 # =====================
 

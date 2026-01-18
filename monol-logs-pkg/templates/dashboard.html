@@ -1,0 +1,722 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Session Dashboard - monol-logs</title>
+  <style>
+    :root {
+      --bg-primary: #0d1117;
+      --bg-secondary: #161b22;
+      --bg-tertiary: #21262d;
+      --text-primary: #c9d1d9;
+      --text-secondary: #8b949e;
+      --text-muted: #6e7681;
+      --border-color: #30363d;
+      --accent-blue: #58a6ff;
+      --accent-green: #3fb950;
+      --accent-purple: #a371f7;
+      --accent-orange: #d29922;
+      --accent-red: #f85149;
+      --accent-cyan: #39c5cf;
+    }
+
+    .light-theme {
+      --bg-primary: #ffffff;
+      --bg-secondary: #f6f8fa;
+      --bg-tertiary: #eaeef2;
+      --text-primary: #24292f;
+      --text-secondary: #57606a;
+      --text-muted: #8c959f;
+      --border-color: #d0d7de;
+    }
+
+    * {
+      margin: 0;
+      padding: 0;
+      box-sizing: border-box;
+    }
+
+    body {
+      font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', 'Noto Sans', Helvetica, Arial, sans-serif;
+      background: var(--bg-primary);
+      color: var(--text-primary);
+      line-height: 1.5;
+    }
+
+    .container {
+      max-width: 1400px;
+      margin: 0 auto;
+      padding: 24px;
+    }
+
+    /* Header */
+    header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-bottom: 24px;
+      padding-bottom: 16px;
+      border-bottom: 1px solid var(--border-color);
+    }
+
+    .logo {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+    }
+
+    .logo h1 {
+      font-size: 20px;
+      font-weight: 600;
+    }
+
+    .logo span {
+      color: var(--text-secondary);
+      font-size: 14px;
+    }
+
+    .header-actions {
+      display: flex;
+      gap: 8px;
+    }
+
+    .btn {
+      padding: 6px 12px;
+      border-radius: 6px;
+      border: 1px solid var(--border-color);
+      background: var(--bg-secondary);
+      color: var(--text-primary);
+      font-size: 14px;
+      cursor: pointer;
+      transition: all 0.15s;
+    }
+
+    .btn:hover {
+      background: var(--bg-tertiary);
+    }
+
+    /* Filters */
+    .filters {
+      display: flex;
+      gap: 12px;
+      margin-bottom: 24px;
+      flex-wrap: wrap;
+    }
+
+    .filter-group {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+    }
+
+    .filter-group label {
+      font-size: 14px;
+      color: var(--text-secondary);
+    }
+
+    .filter-group select,
+    .filter-group input {
+      padding: 6px 12px;
+      border-radius: 6px;
+      border: 1px solid var(--border-color);
+      background: var(--bg-secondary);
+      color: var(--text-primary);
+      font-size: 14px;
+    }
+
+    .filter-group input {
+      width: 140px;
+    }
+
+    /* Stats Cards */
+    .stats-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
+      gap: 16px;
+      margin-bottom: 32px;
+    }
+
+    .stat-card {
+      background: var(--bg-secondary);
+      border: 1px solid var(--border-color);
+      border-radius: 8px;
+      padding: 16px;
+      text-align: center;
+    }
+
+    .stat-value {
+      font-size: 32px;
+      font-weight: 600;
+      color: var(--accent-blue);
+    }
+
+    .stat-label {
+      font-size: 14px;
+      color: var(--text-secondary);
+      margin-top: 4px;
+    }
+
+    /* Timeline */
+    .timeline-section {
+      margin-bottom: 32px;
+    }
+
+    .section-title {
+      font-size: 16px;
+      font-weight: 600;
+      margin-bottom: 16px;
+      display: flex;
+      align-items: center;
+      gap: 8px;
+    }
+
+    .timeline-container {
+      background: var(--bg-secondary);
+      border: 1px solid var(--border-color);
+      border-radius: 8px;
+      padding: 16px;
+      overflow-x: auto;
+    }
+
+    .timeline {
+      min-width: 600px;
+    }
+
+    .timeline-header {
+      display: flex;
+      justify-content: space-between;
+      margin-bottom: 8px;
+      font-size: 12px;
+      color: var(--text-muted);
+    }
+
+    .timeline-row {
+      display: flex;
+      align-items: center;
+      margin-bottom: 8px;
+    }
+
+    .timeline-author {
+      width: 100px;
+      font-size: 14px;
+      color: var(--text-secondary);
+      flex-shrink: 0;
+    }
+
+    .timeline-bars {
+      flex: 1;
+      height: 24px;
+      position: relative;
+      background: var(--bg-tertiary);
+      border-radius: 4px;
+    }
+
+    .timeline-bar {
+      position: absolute;
+      height: 20px;
+      top: 2px;
+      border-radius: 3px;
+      cursor: pointer;
+      transition: opacity 0.15s;
+    }
+
+    .timeline-bar:hover {
+      opacity: 0.8;
+    }
+
+    .timeline-bar[data-color="blue"] { background: var(--accent-blue); }
+    .timeline-bar[data-color="green"] { background: var(--accent-green); }
+    .timeline-bar[data-color="purple"] { background: var(--accent-purple); }
+    .timeline-bar[data-color="orange"] { background: var(--accent-orange); }
+    .timeline-bar[data-color="red"] { background: var(--accent-red); }
+    .timeline-bar[data-color="cyan"] { background: var(--accent-cyan); }
+
+    /* Session Cards */
+    .sessions-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
+      gap: 16px;
+    }
+
+    .session-card {
+      background: var(--bg-secondary);
+      border: 1px solid var(--border-color);
+      border-radius: 8px;
+      padding: 16px;
+      transition: border-color 0.15s;
+    }
+
+    .session-card:hover {
+      border-color: var(--accent-blue);
+    }
+
+    .session-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: flex-start;
+      margin-bottom: 12px;
+    }
+
+    .session-topic {
+      font-size: 16px;
+      font-weight: 600;
+      word-break: break-word;
+    }
+
+    .session-id {
+      font-size: 12px;
+      color: var(--text-muted);
+      font-family: monospace;
+    }
+
+    .session-meta {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 12px;
+      margin-bottom: 12px;
+      font-size: 14px;
+      color: var(--text-secondary);
+    }
+
+    .session-meta-item {
+      display: flex;
+      align-items: center;
+      gap: 4px;
+    }
+
+    .author-badge {
+      display: inline-flex;
+      align-items: center;
+      padding: 2px 8px;
+      border-radius: 12px;
+      font-size: 12px;
+      font-weight: 500;
+    }
+
+    .author-badge[data-color="blue"] { background: rgba(88, 166, 255, 0.2); color: var(--accent-blue); }
+    .author-badge[data-color="green"] { background: rgba(63, 185, 80, 0.2); color: var(--accent-green); }
+    .author-badge[data-color="purple"] { background: rgba(163, 113, 247, 0.2); color: var(--accent-purple); }
+    .author-badge[data-color="orange"] { background: rgba(210, 153, 34, 0.2); color: var(--accent-orange); }
+    .author-badge[data-color="red"] { background: rgba(248, 81, 73, 0.2); color: var(--accent-red); }
+    .author-badge[data-color="cyan"] { background: rgba(57, 197, 207, 0.2); color: var(--accent-cyan); }
+
+    .session-actions {
+      display: flex;
+      gap: 8px;
+    }
+
+    .session-actions .btn {
+      flex: 1;
+      text-align: center;
+    }
+
+    /* Tooltip */
+    .tooltip {
+      position: fixed;
+      background: var(--bg-tertiary);
+      border: 1px solid var(--border-color);
+      border-radius: 6px;
+      padding: 8px 12px;
+      font-size: 12px;
+      pointer-events: none;
+      z-index: 1000;
+      max-width: 300px;
+    }
+
+    /* Toast */
+    .toast {
+      position: fixed;
+      bottom: 24px;
+      right: 24px;
+      background: var(--accent-green);
+      color: white;
+      padding: 12px 24px;
+      border-radius: 6px;
+      font-size: 14px;
+      opacity: 0;
+      transform: translateY(10px);
+      transition: all 0.3s;
+    }
+
+    .toast.show {
+      opacity: 1;
+      transform: translateY(0);
+    }
+
+    /* Empty State */
+    .empty-state {
+      text-align: center;
+      padding: 48px;
+      color: var(--text-secondary);
+    }
+
+    .empty-state h3 {
+      margin-bottom: 8px;
+    }
+
+    /* Responsive */
+    @media (max-width: 768px) {
+      .container {
+        padding: 16px;
+      }
+
+      header {
+        flex-direction: column;
+        gap: 16px;
+        align-items: flex-start;
+      }
+
+      .filters {
+        flex-direction: column;
+      }
+
+      .stats-grid {
+        grid-template-columns: repeat(2, 1fr);
+      }
+
+      .sessions-grid {
+        grid-template-columns: 1fr;
+      }
+    }
+  </style>
+</head>
+<body>
+  <div class="container">
+    <header>
+      <div class="logo">
+        <h1>Session Dashboard</h1>
+        <span>monol-logs</span>
+      </div>
+      <div class="header-actions">
+        <button class="btn" onclick="toggleTheme()">Toggle Theme</button>
+        <button class="btn" onclick="exportData()">Export JSON</button>
+      </div>
+    </header>
+
+    <div class="filters">
+      <div class="filter-group">
+        <label>Author:</label>
+        <select id="filterAuthor" onchange="applyFilters()">
+          <option value="">All</option>
+        </select>
+      </div>
+      <div class="filter-group">
+        <label>From:</label>
+        <input type="date" id="filterDateFrom" onchange="applyFilters()">
+      </div>
+      <div class="filter-group">
+        <label>To:</label>
+        <input type="date" id="filterDateTo" onchange="applyFilters()">
+      </div>
+      <div class="filter-group">
+        <label>Topic:</label>
+        <input type="text" id="filterTopic" placeholder="Search..." oninput="applyFilters()">
+      </div>
+    </div>
+
+    <div class="stats-grid" id="statsGrid"></div>
+
+    <section class="timeline-section">
+      <h2 class="section-title">Timeline</h2>
+      <div class="timeline-container">
+        <div class="timeline" id="timeline"></div>
+      </div>
+    </section>
+
+    <section>
+      <h2 class="section-title">Sessions <span id="sessionCount"></span></h2>
+      <div class="sessions-grid" id="sessionsGrid"></div>
+    </section>
+  </div>
+
+  <div class="tooltip" id="tooltip" style="display: none;"></div>
+  <div class="toast" id="toast"></div>
+
+  <script>
+    // Session data will be injected here
+    const SESSION_DATA = /* SESSION_DATA_PLACEHOLDER */[];
+
+    // Color palette for authors
+    const COLORS = ['blue', 'green', 'purple', 'orange', 'red', 'cyan'];
+    const authorColors = {};
+
+    function getAuthorColor(author) {
+      if (!authorColors[author]) {
+        const idx = Object.keys(authorColors).length % COLORS.length;
+        authorColors[author] = COLORS[idx];
+      }
+      return authorColors[author];
+    }
+
+    // Parse date string
+    function parseDate(str) {
+      return new Date(str);
+    }
+
+    // Format duration
+    function formatDuration(ms) {
+      const hours = Math.floor(ms / (1000 * 60 * 60));
+      const mins = Math.floor((ms % (1000 * 60 * 60)) / (1000 * 60));
+      if (hours > 0) return `${hours}h ${mins}m`;
+      return `${mins}m`;
+    }
+
+    // Format date
+    function formatDate(date) {
+      return date.toLocaleDateString('ko-KR', { month: 'short', day: 'numeric' });
+    }
+
+    // Get filtered sessions
+    function getFilteredSessions() {
+      const authorFilter = document.getElementById('filterAuthor').value;
+      const dateFrom = document.getElementById('filterDateFrom').value;
+      const dateTo = document.getElementById('filterDateTo').value;
+      const topicFilter = document.getElementById('filterTopic').value.toLowerCase();
+
+      return SESSION_DATA.filter(s => {
+        if (authorFilter && s.savedBy !== authorFilter) return false;
+        if (dateFrom && new Date(s.createdAt) < new Date(dateFrom)) return false;
+        if (dateTo && new Date(s.createdAt) > new Date(dateTo + 'T23:59:59')) return false;
+        if (topicFilter && !s.topic.toLowerCase().includes(topicFilter)) return false;
+        return true;
+      });
+    }
+
+    // Render stats
+    function renderStats(sessions) {
+      const totalMsgs = sessions.reduce((sum, s) => sum + s.messageCount, 0);
+      const authors = new Set(sessions.map(s => s.savedBy));
+      const totalDuration = sessions.reduce((sum, s) => {
+        const created = parseDate(s.createdAt);
+        const saved = parseDate(s.savedAt);
+        return sum + (saved - created);
+      }, 0);
+
+      document.getElementById('statsGrid').innerHTML = `
+        <div class="stat-card">
+          <div class="stat-value">${sessions.length}</div>
+          <div class="stat-label">Sessions</div>
+        </div>
+        <div class="stat-card">
+          <div class="stat-value">${authors.size}</div>
+          <div class="stat-label">Authors</div>
+        </div>
+        <div class="stat-card">
+          <div class="stat-value">${totalMsgs.toLocaleString()}</div>
+          <div class="stat-label">Messages</div>
+        </div>
+        <div class="stat-card">
+          <div class="stat-value">${formatDuration(totalDuration)}</div>
+          <div class="stat-label">Total Time</div>
+        </div>
+      `;
+    }
+
+    // Render timeline
+    function renderTimeline(sessions) {
+      if (sessions.length === 0) {
+        document.getElementById('timeline').innerHTML = '<div class="empty-state">No sessions to display</div>';
+        return;
+      }
+
+      const authors = [...new Set(sessions.map(s => s.savedBy))];
+      const minDate = Math.min(...sessions.map(s => parseDate(s.createdAt).getTime()));
+      const maxDate = Math.max(...sessions.map(s => parseDate(s.savedAt).getTime()));
+      const range = maxDate - minDate || 1;
+
+      // Generate date labels
+      const dayCount = Math.ceil(range / (24 * 60 * 60 * 1000)) || 1;
+      const labelCount = Math.min(dayCount, 7);
+      const labelStep = range / labelCount;
+
+      let headerHtml = '<div class="timeline-header">';
+      for (let i = 0; i <= labelCount; i++) {
+        headerHtml += `<span>${formatDate(new Date(minDate + i * labelStep))}</span>`;
+      }
+      headerHtml += '</div>';
+
+      let rowsHtml = '';
+      authors.forEach(author => {
+        const authorSessions = sessions.filter(s => s.savedBy === author);
+        const color = getAuthorColor(author);
+
+        let barsHtml = '';
+        authorSessions.forEach(s => {
+          const start = parseDate(s.createdAt).getTime();
+          const end = parseDate(s.savedAt).getTime();
+          const left = ((start - minDate) / range) * 100;
+          const width = Math.max(((end - start) / range) * 100, 1);
+
+          barsHtml += `<div class="timeline-bar" data-color="${color}"
+            style="left: ${left}%; width: ${width}%"
+            data-session='${JSON.stringify(s)}'
+            onmouseenter="showTooltip(event, this)"
+            onmouseleave="hideTooltip()"
+            onclick="scrollToSession('${s.sessionId}')"></div>`;
+        });
+
+        rowsHtml += `
+          <div class="timeline-row">
+            <div class="timeline-author">${author}</div>
+            <div class="timeline-bars">${barsHtml}</div>
+          </div>
+        `;
+      });
+
+      document.getElementById('timeline').innerHTML = headerHtml + rowsHtml;
+    }
+
+    // Render session cards
+    function renderSessions(sessions) {
+      document.getElementById('sessionCount').textContent = `(${sessions.length})`;
+
+      if (sessions.length === 0) {
+        document.getElementById('sessionsGrid').innerHTML = `
+          <div class="empty-state">
+            <h3>No sessions found</h3>
+            <p>Try adjusting your filters</p>
+          </div>
+        `;
+        return;
+      }
+
+      // Sort by date descending
+      const sorted = [...sessions].sort((a, b) =>
+        parseDate(b.createdAt) - parseDate(a.createdAt)
+      );
+
+      document.getElementById('sessionsGrid').innerHTML = sorted.map(s => {
+        const created = parseDate(s.createdAt);
+        const saved = parseDate(s.savedAt);
+        const duration = formatDuration(saved - created);
+        const color = getAuthorColor(s.savedBy);
+        const shortId = s.sessionId.substring(0, 8);
+
+        return `
+          <div class="session-card" id="session-${s.sessionId}">
+            <div class="session-header">
+              <div>
+                <div class="session-topic">${escapeHtml(s.topic)}</div>
+                <div class="session-id">${shortId}</div>
+              </div>
+              <span class="author-badge" data-color="${color}">${escapeHtml(s.savedBy)}</span>
+            </div>
+            <div class="session-meta">
+              <span class="session-meta-item">${created.toLocaleDateString('ko-KR')}</span>
+              <span class="session-meta-item">${created.toLocaleTimeString('ko-KR', {hour: '2-digit', minute: '2-digit'})}</span>
+              <span class="session-meta-item">${duration}</span>
+              <span class="session-meta-item">${s.messageCount} msgs</span>
+            </div>
+            <div class="session-actions">
+              <button class="btn" onclick="copyCommand('view', '${shortId}')">View</button>
+              <button class="btn" onclick="copyCommand('resume', '${shortId}')">Resume</button>
+              <button class="btn" onclick="copyCommand('load', '${shortId}')">Load</button>
+            </div>
+          </div>
+        `;
+      }).join('');
+    }
+
+    // Populate author filter
+    function populateAuthorFilter() {
+      const authors = [...new Set(SESSION_DATA.map(s => s.savedBy))];
+      const select = document.getElementById('filterAuthor');
+      authors.forEach(author => {
+        const option = document.createElement('option');
+        option.value = author;
+        option.textContent = author;
+        select.appendChild(option);
+      });
+    }
+
+    // Apply filters and re-render
+    function applyFilters() {
+      const filtered = getFilteredSessions();
+      renderStats(filtered);
+      renderTimeline(filtered);
+      renderSessions(filtered);
+    }
+
+    // Tooltip
+    function showTooltip(event, el) {
+      const s = JSON.parse(el.dataset.session);
+      const tooltip = document.getElementById('tooltip');
+      const created = parseDate(s.createdAt);
+      const saved = parseDate(s.savedAt);
+      const duration = formatDuration(saved - created);
+
+      tooltip.innerHTML = `
+        <strong>${escapeHtml(s.topic)}</strong><br>
+        Author: ${escapeHtml(s.savedBy)}<br>
+        Date: ${created.toLocaleDateString('ko-KR')}<br>
+        Duration: ${duration}<br>
+        Messages: ${s.messageCount}
+      `;
+      tooltip.style.display = 'block';
+      tooltip.style.left = event.pageX + 10 + 'px';
+      tooltip.style.top = event.pageY + 10 + 'px';
+    }
+
+    function hideTooltip() {
+      document.getElementById('tooltip').style.display = 'none';
+    }
+
+    // Scroll to session card
+    function scrollToSession(id) {
+      const el = document.getElementById('session-' + id);
+      if (el) {
+        el.scrollIntoView({ behavior: 'smooth', block: 'center' });
+        el.style.borderColor = 'var(--accent-blue)';
+        setTimeout(() => el.style.borderColor = '', 2000);
+      }
+    }
+
+    // Copy command
+    function copyCommand(action, id) {
+      const cmd = `/session ${action} ${id}`;
+      navigator.clipboard.writeText(cmd).then(() => {
+        showToast(`Copied: ${cmd}`);
+      });
+    }
+
+    // Toast notification
+    function showToast(message) {
+      const toast = document.getElementById('toast');
+      toast.textContent = message;
+      toast.classList.add('show');
+      setTimeout(() => toast.classList.remove('show'), 2000);
+    }
+
+    // Toggle theme
+    function toggleTheme() {
+      document.body.classList.toggle('light-theme');
+    }
+
+    // Export data
+    function exportData() {
+      const filtered = getFilteredSessions();
+      const blob = new Blob([JSON.stringify(filtered, null, 2)], { type: 'application/json' });
+      const url = URL.createObjectURL(blob);
+      const a = document.createElement('a');
+      a.href = url;
+      a.download = 'sessions.json';
+      a.click();
+      URL.revokeObjectURL(url);
+    }
+
+    // Escape HTML
+    function escapeHtml(str) {
+      const div = document.createElement('div');
+      div.textContent = str;
+      return div.innerHTML;
+    }
+
+    // Initialize
+    document.addEventListener('DOMContentLoaded', () => {
+      populateAuthorFilter();
+      applyFilters();
+    });
+  </script>
+</body>
+</html>

@@ -26,6 +26,7 @@ npm install -g monol-logs
 | `/roadmap` | 로드맵, 할일 | TODO 추출 |
 | `/summary` | 요약, 정리 | AI 요약 생성 |
 | `/branch` | 브랜치, 분기 | 세션 분기 |
+| `/visualize` | 시각화, 대시보드 | 타임라인/대시보드 생성 |
 
 **한글 자연어 입력 지원**: "세션 목록 보여줘", "이전 세션 이어해줘" 등
 
@@ -139,6 +140,27 @@ git push
 /sessions --author alice     # alice 세션만
 /session load <id>           # 요약 로드
 ```
+
+## 시각화
+
+```bash
+# 터미널 ASCII 타임라인
+/visualize
+
+# 마크다운 보고서 생성
+/visualize --md
+
+# 인터랙티브 HTML 대시보드
+/visualize --html --open
+
+# 필터링
+/visualize --author alice --date 7d
+```
+
+**출력 형식:**
+- `--ascii` (기본): 터미널에 ASCII 타임라인 출력
+- `--md`: `.claude/sessions/visualization.md` 생성
+- `--html`: `.claude/sessions/dashboard.html` 생성 (브라우저에서 열기)
 
 ## vs `claude --resume`
 
