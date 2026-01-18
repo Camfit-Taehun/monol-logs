@@ -1,0 +1,37 @@
+{
+  "name": "monol-logs",
+  "version": "3.2.0",
+  "description": "Claude Code plugin for session auto-save, roadmap, summary, index, and branch",
+  "main": "index.js",
+  "bin": {
+    "monol-logs": "./bin/cli.js"
+  },
+  "scripts": {
+    "postinstall": "node scripts/install.js",
+    "preuninstall": "node scripts/uninstall.js"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/Camfit-Taehun/monol-logs.git"
+  },
+  "keywords": [
+    "claude",
+    "claude-code",
+    "plugin",
+    "session",
+    "logs"
+  ],
+  "author": "Camfit-Taehun",
+  "license": "MIT",
+  "bugs": {
+    "url": "https://github.com/Camfit-Taehun/monol-logs/issues"
+  },
+  "homepage": "https://github.com/Camfit-Taehun/monol-logs#readme",
+  "files": [
+    "marketplace.json",
+    "monol-logs-pkg/",
+    "bin/",
+    "scripts/",
+    "index.js"
+  ]
+}
