@@ -1,5 +1,5 @@
 ---
-description: 세션 내보내기 - 프로젝트 내 .claude/sessions/로 백업
+description: 세션 내보내기 (한글: 저장, 내보내기, 세션저장, 백업)
 use_when:
   - 사용자가 "내보내기", "export", "백업", "저장" 등을 언급할 때
   - 세션을 프로젝트에 보관하고 싶을 때

@@ -36,15 +36,12 @@ function uninstall() {
   if (settings) {
     if (settings.extraKnownMarketplaces && settings.extraKnownMarketplaces[MARKETPLACE_NAME]) {
       delete settings.extraKnownMarketplaces[MARKETPLACE_NAME];
-      console.log(`✅ Removed marketplace from settings`);
     }
-
     if (settings.enabledPlugins && settings.enabledPlugins[`${PLUGIN_NAME}@${MARKETPLACE_NAME}`]) {
       delete settings.enabledPlugins[`${PLUGIN_NAME}@${MARKETPLACE_NAME}`];
-      console.log(`✅ Disabled plugin`);
     }
-
     writeJSON(settingsPath, settings);
+    console.log(`✅ Removed from ${settingsPath}`);
   }
 
   // Update known_marketplaces.json
@@ -52,14 +49,10 @@ function uninstall() {
   if (knownMarketplaces && knownMarketplaces[MARKETPLACE_NAME]) {
     delete knownMarketplaces[MARKETPLACE_NAME];
     writeJSON(knownMarketplacesPath, knownMarketplaces);
-    console.log(`✅ Removed from known marketplaces`);
+    console.log(`✅ Removed from ${knownMarketplacesPath}`);
   }
 
-  console.log(`
-🎉 ${PLUGIN_NAME} uninstalled successfully!
-
-Restart Claude Code to complete the removal.
-`);
+  console.log(`\n✅ ${PLUGIN_NAME} uninstalled successfully!\n`);
 }
 
 try {

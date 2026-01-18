@@ -1,5 +1,5 @@
 ---
-description: 로드맵/TODO 추출 - 세션에서 할 일 목록 생성
+description: 로드맵/TODO 추출 (한글: 로드맵, 할일, TODO, 남은작업)
 use_when:
   - 사용자가 "로드맵", "TODO", "할 일" 등을 언급할 때
   - 세션에서 남은 작업을 정리하고 싶을 때

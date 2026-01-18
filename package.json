@@ -1,6 +1,6 @@
 {
   "name": "monol-logs",
-  "version": "3.2.3",
+  "version": "3.3.4",
   "description": "Claude Code plugin for session auto-save, roadmap, summary, index, and branch",
   "main": "index.js",
   "bin": {

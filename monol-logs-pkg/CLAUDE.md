@@ -29,25 +29,32 @@ git clone https://github.com/your/monol-logs.git ~/monol-logs
 ```
 
 플러그인 활성화 후 자동으로:
-- `/sessions`, `/export`, `/roadmap`, `/summary`, `/branch` 스킬 사용 가능
 - SessionEnd, PreCompact 훅 자동 등록
 
 ## 스킬 (Commands)
 
+| 커맨드 | 한글 키워드 | 설명 |
+|--------|-------------|------|
+| `/sessions` | 세션, 세션목록 | 아카이브된 세션 목록 |
+| `/save` | 저장, 내보내기, 백업 | 세션 내보내기 |
+| `/roadmap` | 로드맵, 할일, TODO | TODO 추출 |
+| `/summary` | 요약, 정리 | AI 요약 생성 |
+| `/branch` | 브랜치, 분기 | 세션 분기 |
+
+**한글 자연어 입력 지원**: "세션 목록 보여줘", "요약해줘" 등으로 말하면 해당 커맨드가 실행됩니다.
+
+### 상세 옵션
+
 ```
-/sessions                # 아카이브된 세션 목록
 /sessions --available    # 내보내기 가능한 세션
 /sessions --update       # index.md 갱신
 
-/export                  # 최근 세션 내보내기
-/export <id> <topic>     # 특정 세션 내보내기
-/export --list           # 내보내기 가능한 세션
+/save <id> <topic>       # 특정 세션 내보내기
+/save --list             # 내보내기 가능한 세션
 
-/roadmap                 # 최근 세션 TODO 추출
 /roadmap --show          # roadmap.md 보기
 /roadmap --all           # 모든 세션 TODO 추출
 
-/summary                 # 최근 세션 AI 요약
 /summary --show          # 요약 보기
 /summary --rule-based    # API 없이 규칙 기반
 

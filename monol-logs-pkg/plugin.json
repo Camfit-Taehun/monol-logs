@@ -1,6 +1,6 @@
 {
   "name": "monol-logs",
-  "version": "3.2.0",
+  "version": "3.3.3",
   "description": "Claude Code 세션을 프로젝트 내에 자동 저장 + 로드맵/요약/인덱스/브랜치",
   "author": "monol",
   "commands": "commands/",
