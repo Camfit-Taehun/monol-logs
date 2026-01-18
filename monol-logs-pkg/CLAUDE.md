@@ -34,18 +34,25 @@ npm install -g monol-logs
 ### 1. 세션 등록
 
 ```
-/save                      # 최근 세션 등록
+/save                      # 최근 세션 등록 + 요약/TODO 자동 생성
 /save f6702810 login-feat  # 특정 세션 + 토픽으로 등록
+/save --no-summary         # 요약 없이 빠르게 저장
 /save --list               # 등록 가능한 세션 목록
 ```
 
-**저장되는 것:**
+**자동 생성되는 것:**
 - `.meta.json` - 메타데이터 (원본 경로 참조)
-- `.summary.md` - AI 요약 (선택)
-- `.roadmap.md` - TODO 목록 (선택)
+- `.summary.md` - AI 요약 **(자동)**
+- `.roadmap.md` - TODO 목록 **(자동)**
 
 **저장 안 되는 것:**
 - `.jsonl` 원본 (복사 안 함, 참조만)
+
+**팀 공유:**
+```bash
+git add .claude/sessions/  # 요약/메타만 커밋 (jsonl 제외)
+git commit -m "docs: feature-x 세션 기록"
+```
 
 ### 2. 세션 보기
 
