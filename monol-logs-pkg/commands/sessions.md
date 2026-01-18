@@ -27,6 +27,7 @@ use_when:
 
 - (없음): 등록된 세션 목록 표시
 - `--available` 또는 `-a`: 등록 가능한 세션 목록
+- `--author <name>`: 특정 작성자의 세션만 필터링
 - `--index` 또는 `-i`: index.md 내용 표시
 - `--update` 또는 `-u`: index.md 갱신
 - `--help` 또는 `-h`: 도움말 표시
@@ -38,11 +39,11 @@ use_when:
 ```
 📚 등록된 세션 (5)
 
-| # | Date       | Topic           | ID       | Msgs | Summary | Source |
-|---|------------|-----------------|----------|------|---------|--------|
-| 1 | 2026-01-18 | login-feature   | f6702810 | 42   | ✓       | ✓      |
-| 2 | 2026-01-17 | api-refactor    | a1b2c3d4 | 78   | ✓       | ✓      |
-| 3 | 2026-01-16 | bug-fix         | e5f6g7h8 | 15   | -       | ⚠️      |
+| # | Author | Date       | Topic           | ID       | Msgs | Summary | Source |
+|---|--------|------------|-----------------|----------|------|---------|--------|
+| 1 | alice  | 2026-01-18 | login-feature   | f6702810 | 42   | ✓       | ✓      |
+| 2 | bob    | 2026-01-17 | api-refactor    | a1b2c3d4 | 78   | ✓       | ✓      |
+| 3 | alice  | 2026-01-16 | bug-fix         | e5f6g7h8 | 15   | -       | ⚠️      |
 ...
 
 💡 팁:
@@ -52,12 +53,19 @@ use_when:
 ```
 
 각 세션에 대해:
+- 작성자: meta.json의 `savedBy` (git user.name)
 - 날짜: meta.json의 `createdAt`에서 추출
 - 토픽: meta.json의 `topic`
 - ID: 세션 ID 앞 8자리
 - Msgs: 메시지 수
 - Summary: `.summary.md` 존재 여부
 - Source: 원본 jsonl 존재 여부 (⚠️ = 원본 없음)
+
+**필터링 옵션:**
+```
+/sessions --author alice     # alice의 세션만
+/sessions --author bob       # bob의 세션만
+```
 
 ### 3. --available인 경우
 
@@ -108,10 +116,10 @@ Total sessions: 5
 
 ## Sessions
 
-| Date | Topic | ID | Messages | Summary | Roadmap | Source |
-|------|-------|-----|----------|---------|---------|--------|
-| 2026-01-18 | login-feature | f6702810 | 42 | [View](./xxx.summary.md) | [View](./xxx.roadmap.md) | ✓ |
-| 2026-01-17 | api-refactor | a1b2c3d4 | 78 | [View](./xxx.summary.md) | - | ✓ |
+| Author | Date | Topic | ID | Messages | Summary | Roadmap | Source |
+|--------|------|-------|-----|----------|---------|---------|--------|
+| alice | 2026-01-18 | login-feature | f6702810 | 42 | [View](./xxx.summary.md) | [View](./xxx.roadmap.md) | ✓ |
+| bob | 2026-01-17 | api-refactor | a1b2c3d4 | 78 | [View](./xxx.summary.md) | - | ✓ |
 ...
 
 ## Quick Commands

@@ -79,7 +79,19 @@ session-id가 주어지면:
 session-id가 없으면:
 - 가장 최근에 수정된 `.jsonl` 파일 사용
 
-#### 4.2 토픽 자동 추출 (토픽 미지정 시)
+#### 4.2 작업자 자동 감지
+
+git config에서 사용자 이름 가져오기:
+```bash
+git config user.name  # → "alice"
+```
+
+이름을 파일명에 적합하게 변환:
+- 소문자로 변환
+- 공백 → 하이픈
+- 특수문자 제거
+
+#### 4.3 토픽 자동 추출 (토픽 미지정 시)
 
 세션 파일의 첫 번째 사용자 메시지에서 토픽 추출:
 1. 첫 번째 `"type":"human"` 메시지 찾기
@@ -87,7 +99,21 @@ session-id가 없으면:
 3. 파일명에 적합하게 변환 (공백→하이픈, 특수문자 제거)
 4. 최대 30자로 제한
 
-#### 4.3 파일 생성 (3개)
+#### 4.4 파일명 형식
+
+```
+{author}_{date}_{time}_{topic}_{session-id}.{ext}
+```
+
+예시:
+```
+alice_2026-01-18_1430_login-feature_f6702810.meta.json
+alice_2026-01-18_1430_login-feature_f6702810.conversation.md
+alice_2026-01-18_1430_login-feature_f6702810.summary.md
+alice_2026-01-18_1430_login-feature_f6702810.roadmap.md
+```
+
+#### 4.5 파일 생성 (4개)
 
 ```bash
 mkdir -p .claude/sessions/

@@ -97,13 +97,17 @@ Date: 2026-01-18 14:30
 
 ```
 .claude/sessions/
-├── index.md                                           # 세션 목록
-├── roadmap.md                                         # TODO 통합
-├── 2026-01-18_1430_login-feature_f6702810.meta.json        # 메타데이터
-├── 2026-01-18_1430_login-feature_f6702810.conversation.md  # 전체 대화
-├── 2026-01-18_1430_login-feature_f6702810.summary.md       # AI 요약
-└── 2026-01-18_1430_login-feature_f6702810.roadmap.md       # 세션별 TODO
+├── index.md                                                    # 세션 목록
+├── roadmap.md                                                  # TODO 통합
+├── alice_2026-01-18_1430_login-feature_f6702810.meta.json      # 메타데이터
+├── alice_2026-01-18_1430_login-feature_f6702810.conversation.md # 전체 대화
+├── alice_2026-01-18_1430_login-feature_f6702810.summary.md     # AI 요약
+├── alice_2026-01-18_1430_login-feature_f6702810.roadmap.md     # 세션별 TODO
+├── bob_2026-01-17_0930_api-refactor_a1b2c3d4.meta.json         # 다른 팀원
+└── ...
 ```
+
+**파일명 형식:** `{author}_{date}_{time}_{topic}_{session-id}.{ext}`
 
 **meta.json 예시:**
 ```json
@@ -112,8 +116,28 @@ Date: 2026-01-18 14:30
   "source": "~/.claude/projects/-Users-kent-Work/f6702810-xxxx.jsonl",
   "topic": "login-feature",
   "createdAt": "2026-01-18T14:30:00Z",
-  "messageCount": 42
+  "savedAt": "2026-01-18T18:00:00Z",
+  "savedBy": "alice",
+  "messageCount": 42,
+  "size": 125000
 }
+```
+
+## 팀 협업
+
+```bash
+# 1. 각자 세션 저장 (작성자 자동 감지)
+/save my-feature
+
+# 2. git으로 공유
+git add .claude/sessions/
+git commit -m "docs: add session logs"
+git push
+
+# 3. 팀원 세션 확인
+/sessions                    # 전체 세션 목록
+/sessions --author alice     # alice 세션만
+/session load <id>           # 요약 로드
 ```
 
 ## vs `claude --resume`
