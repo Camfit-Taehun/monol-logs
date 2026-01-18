@@ -42,6 +42,7 @@ npm install -g monol-logs
 
 **자동 생성되는 것:**
 - `.meta.json` - 메타데이터 (원본 경로 참조)
+- `.conversation.md` - 전체 대화 **(읽기 좋은 형태)**
 - `.summary.md` - AI 요약 **(자동)**
 - `.roadmap.md` - TODO 목록 **(자동)**
 
@@ -96,11 +97,12 @@ Date: 2026-01-18 14:30
 
 ```
 .claude/sessions/
-├── index.md                                    # 세션 목록
-├── roadmap.md                                  # TODO 통합
-├── 2026-01-18_1430_login-feature_f6702810.meta.json    # 메타데이터
-├── 2026-01-18_1430_login-feature_f6702810.summary.md   # AI 요약
-└── 2026-01-18_1430_login-feature_f6702810.roadmap.md   # 세션별 TODO
+├── index.md                                           # 세션 목록
+├── roadmap.md                                         # TODO 통합
+├── 2026-01-18_1430_login-feature_f6702810.meta.json        # 메타데이터
+├── 2026-01-18_1430_login-feature_f6702810.conversation.md  # 전체 대화
+├── 2026-01-18_1430_login-feature_f6702810.summary.md       # AI 요약
+└── 2026-01-18_1430_login-feature_f6702810.roadmap.md       # 세션별 TODO
 ```
 
 **meta.json 예시:**

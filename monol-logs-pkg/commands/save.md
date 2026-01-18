@@ -14,6 +14,7 @@ use_when:
 
 **저장되는 것:**
 - `meta.json` - 메타데이터 (원본 경로 참조)
+- `conversation.md` - 전체 대화 **(읽기 좋은 형태)**
 - `summary.md` - AI 요약 **(자동 생성)**
 - `roadmap.md` - TODO 추출 **(자동 생성)**
 
@@ -107,7 +108,76 @@ mkdir -p .claude/sessions/
 }
 ```
 
-**파일 2: `{base}.summary.md`** - AI 요약 (자동 생성)
+**파일 2: `{base}.conversation.md`** - 전체 대화 (읽기 좋은 형태)
+
+jsonl을 파싱하여 사람이 읽기 쉬운 마크다운으로 변환:
+
+```markdown
+# Session: login-feature
+
+Date: 2026-01-18 14:30
+Author: kent
+Messages: 42
+
+---
+
+## 👤 User (14:30)
+
+로그인 기능 만들어줘
+
+## 🤖 Assistant (14:31)
+
+로그인 기능을 구현하겠습니다.
+
+먼저 필요한 파일들을 확인하겠습니다.
+
+📁 **Read**: `src/auth/login.ts`
+
+## 👤 User (14:35)
+
+테스트도 추가해줘
+
+## 🤖 Assistant (14:36)
+
+테스트 코드를 작성하겠습니다.
+
+✏️ **Write**: `src/auth/login.test.ts`
+
+```typescript
+describe('login', () => {
+  it('should login successfully', () => {
+    // ... (코드 일부)
+  });
+});
+```
+
+## 👤 User (14:40)
+
+좋아, 커밋해줘
+
+## 🤖 Assistant (14:41)
+
+커밋하겠습니다.
+
+🔧 **Bash**: `git add -A && git commit -m "feat: add login feature"`
+
+---
+_End of session_
+```
+
+#### 변환 규칙:
+
+| jsonl type | 변환 형식 |
+|------------|-----------|
+| `"type":"human"` | `## 👤 User (시간)` |
+| `"type":"assistant"` | `## 🤖 Assistant (시간)` |
+| Tool: Read | `📁 **Read**: \`path\`` |
+| Tool: Write | `✏️ **Write**: \`path\`` + 코드 일부 |
+| Tool: Edit | `📝 **Edit**: \`path\`` |
+| Tool: Bash | `🔧 **Bash**: \`command\`` |
+| Tool: Grep/Glob | `🔍 **Search**: pattern` |
+
+**파일 3: `{base}.summary.md`** - AI 요약 (자동 생성)
 
 세션 내용을 분석하여 요약 생성:
 
@@ -184,6 +254,7 @@ Session saved:
 
 📁 Generated files:
   ✓ .claude/sessions/2026-01-18_1430_login-feature_f6702810.meta.json
+  ✓ .claude/sessions/2026-01-18_1430_login-feature_f6702810.conversation.md
   ✓ .claude/sessions/2026-01-18_1430_login-feature_f6702810.summary.md
   ✓ .claude/sessions/2026-01-18_1430_login-feature_f6702810.roadmap.md
 
