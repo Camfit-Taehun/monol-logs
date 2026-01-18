@@ -16,6 +16,9 @@ use_when:
 /branch <branch-name> [options]
 /branch --list
 /branch --branches
+/branch --worktrees          # 워크트리 목록 + 상태
+/branch --prune              # stale 워크트리 정리
+/branch --delete <name>      # 워크트리 삭제
 ```
 
 ## 인자: $ARGUMENTS
@@ -28,6 +31,10 @@ use_when:
 
 - `--list` 또는 `-l`: 현재 세션 목록 표시
 - `--branches` 또는 `-b`: 분기 기록 표시
+- `--worktrees` 또는 `--wt`: 워크트리 목록 및 상태 표시
+- `--prune`: stale(삭제된) 워크트리 기록 정리
+- `--delete <name>` 또는 `-d <name>`: 워크트리 삭제 (브랜치명 또는 경로)
+- `--force`: `--delete`와 함께 사용, 강제 삭제
 - `--help` 또는 `-h`: 도움말 표시
 - `<branch-name>`: 분기할 브랜치 이름
 - `--same-dir`: git worktree 없이 같은 디렉토리에서 세션만 분기
@@ -46,7 +53,65 @@ use_when:
 
 `.claude/sessions/branches.md` 파일 내용을 표시합니다.
 
-### 4. 브랜치 생성인 경우
+### 4. --worktrees인 경우
+
+현재 레포의 모든 git worktree 목록과 상태를 표시합니다.
+
+```bash
+# lib/branch.sh의 list_worktrees 함수 호출
+list_worktrees true  # verbose 모드
+```
+
+출력 예시:
+```
+=== Git Worktrees ===
+
+✓ main
+  경로: /Users/kent/Work/monol/monol-logs
+
+✓ feature-auth
+  경로: /Users/kent/Work/monol/monol-logs-feature-auth
+
+⚠ old-experiment
+  경로: /Users/kent/Work/monol/monol-logs-old-experiment (prunable - 삭제됨)
+```
+
+상태 표시:
+- ✓: 정상
+- ⚠: prunable (디렉토리 삭제됨, git 기록만 남음)
+- ✗: missing (경로 접근 불가)
+
+### 5. --prune인 경우
+
+삭제된 워크트리의 git 기록을 정리합니다.
+
+```bash
+# lib/branch.sh의 prune_worktrees 함수 호출
+prune_worktrees
+```
+
+출력:
+```
+=== Prunable Worktrees ===
+  - /Users/kent/Work/monol/monol-logs-old-experiment
+
+✓ 워크트리 정리 완료
+```
+
+### 6. --delete인 경우
+
+특정 워크트리를 삭제합니다. 브랜치명 또는 경로로 지정 가능.
+
+```bash
+# lib/branch.sh의 remove_worktree 함수 호출
+remove_worktree "feature-auth"        # 브랜치명
+remove_worktree "../monol-logs-feature-auth"  # 경로
+
+# --force와 함께 사용
+remove_worktree "feature-auth" true   # 강제 삭제
+```
+
+### 7. 브랜치 생성인 경우
 
 #### 4.1 현재 세션 ID 확인
 
@@ -143,6 +208,18 @@ Directory: <worktree-path>
 
 /branch --branches
 → 분기 기록 보기
+
+/branch --worktrees
+→ 모든 워크트리 목록 + 상태 (prunable 등)
+
+/branch --prune
+→ 삭제된 워크트리 기록 정리
+
+/branch --delete feature-old
+→ feature-old 브랜치의 워크트리 삭제
+
+/branch --delete feature-old --force
+→ 변경사항이 있어도 강제 삭제
 ```
 
 ## 주의사항

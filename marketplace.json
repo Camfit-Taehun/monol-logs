@@ -6,7 +6,7 @@
       "name": "monol-logs",
       "version": "3.2.0",
       "description": "세션 자동 저장, 로드맵/요약/인덱스, 세션 브랜치",
-      "path": "monol-logs"
+      "path": "monol-logs-pkg"
     }
   ]
 }

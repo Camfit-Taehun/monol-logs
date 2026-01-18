@@ -103,9 +103,137 @@ create_worktree() {
   fi
 }
 
-# worktree 목록
+# worktree 목록 (상세)
 list_worktrees() {
-  git worktree list
+  local verbose="${1:-false}"
+
+  if [ "$verbose" = "true" ]; then
+    echo "=== Git Worktrees ==="
+    echo ""
+
+    git worktree list --porcelain | while read -r line; do
+      case "$line" in
+        worktree\ *)
+          current_path="${line#worktree }"
+          ;;
+        HEAD\ *)
+          current_head="${line#HEAD }"
+          ;;
+        branch\ *)
+          current_branch="${line#branch refs/heads/}"
+          ;;
+        prunable)
+          current_prunable="yes"
+          ;;
+        "")
+          # 빈 줄 = 항목 구분
+          if [ -n "$current_path" ]; then
+            local wt_status="✓"
+            local note=""
+
+            if [ "$current_prunable" = "yes" ]; then
+              wt_status="⚠"
+              note=" (prunable - 삭제됨)"
+            elif [ ! -d "$current_path" ]; then
+              wt_status="✗"
+              note=" (missing)"
+            fi
+
+            echo "$wt_status $current_branch"
+            echo "  경로: $current_path$note"
+            echo ""
+          fi
+
+          # 초기화
+          current_path=""
+          current_head=""
+          current_branch=""
+          current_prunable=""
+          ;;
+      esac
+    done
+  else
+    git worktree list
+  fi
+}
+
+# prunable 워크트리 목록
+list_prunable_worktrees() {
+  git worktree list --porcelain | grep -B2 "^prunable" | grep "^worktree" | sed 's/^worktree //'
+}
+
+# 워크트리 정리 (prune)
+prune_worktrees() {
+  local dry_run="${1:-false}"
+
+  local prunable=$(list_prunable_worktrees)
+
+  if [ -z "$prunable" ]; then
+    echo "정리할 워크트리가 없습니다."
+    return 0
+  fi
+
+  echo "=== Prunable Worktrees ==="
+  echo "$prunable" | while read -r path; do
+    echo "  - $path"
+  done
+  echo ""
+
+  if [ "$dry_run" = "true" ]; then
+    echo "(dry-run) git worktree prune 실행 시 위 항목들이 정리됩니다."
+  else
+    git worktree prune
+    echo "✓ 워크트리 정리 완료"
+  fi
+}
+
+# 워크트리 삭제
+remove_worktree() {
+  local target="$1"
+  local force="${2:-false}"
+
+  if [ -z "$target" ]; then
+    echo "삭제할 워크트리 경로 또는 브랜치명을 지정하세요." >&2
+    return 1
+  fi
+
+  # 브랜치명으로 찾기
+  local worktree_path=""
+  if [ -d "$target" ]; then
+    worktree_path="$target"
+  else
+    # 브랜치명으로 경로 찾기
+    worktree_path=$(git worktree list --porcelain | grep -A1 "branch refs/heads/$target" | grep "^worktree" | sed 's/^worktree //' | head -1)
+
+    if [ -z "$worktree_path" ]; then
+      # 프로젝트명-브랜치명 패턴으로 찾기
+      local project_name=$(basename "$(pwd)")
+      worktree_path=$(git worktree list | grep "${project_name}-${target}" | awk '{print $1}')
+    fi
+  fi
+
+  if [ -z "$worktree_path" ]; then
+    echo "워크트리를 찾을 수 없습니다: $target" >&2
+    return 1
+  fi
+
+  echo "삭제 대상: $worktree_path"
+
+  if [ "$force" = "true" ]; then
+    git worktree remove --force "$worktree_path"
+  else
+    git worktree remove "$worktree_path"
+  fi
+
+  if [ $? -eq 0 ]; then
+    echo "✓ 워크트리 삭제 완료"
+
+    # prune도 실행
+    git worktree prune 2>/dev/null
+  else
+    echo "워크트리 삭제 실패. --force 옵션을 사용해보세요." >&2
+    return 1
+  fi
 }
 
 # =====================
