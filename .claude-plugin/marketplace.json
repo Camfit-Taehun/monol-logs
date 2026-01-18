@@ -1,0 +1,19 @@
+{
+  "$schema": "https://anthropic.com/claude-code/marketplace.schema.json",
+  "name": "monol-logs",
+  "description": "Claude Code 세션 자동 저장 및 관리",
+  "owner": {
+    "name": "Camfit-Taehun"
+  },
+  "plugins": [
+    {
+      "name": "monol-logs",
+      "description": "세션 자동 저장, 로드맵/요약/인덱스, 세션 브랜치",
+      "author": {
+        "name": "Camfit-Taehun"
+      },
+      "source": "./monol-logs-pkg",
+      "category": "productivity"
+    }
+  ]
+}

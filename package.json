@@ -1,6 +1,6 @@
 {
   "name": "monol-logs",
-  "version": "3.2.1",
+  "version": "3.2.2",
   "description": "Claude Code plugin for session auto-save, roadmap, summary, index, and branch",
   "main": "index.js",
   "bin": {
@@ -28,10 +28,10 @@
   },
   "homepage": "https://github.com/Camfit-Taehun/monol-logs#readme",
   "files": [
-    "marketplace.json",
-    "monol-logs-pkg/",
-    "bin/",
-    "scripts/",
+    ".claude-plugin",
+    "monol-logs-pkg",
+    "bin",
+    "scripts",
     "index.js"
   ]
 }

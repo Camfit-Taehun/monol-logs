@@ -53,8 +53,8 @@ function install() {
 
   settings.extraKnownMarketplaces[MARKETPLACE_NAME] = {
     source: {
-      source: 'npm',
-      package: PLUGIN_NAME
+      source: 'directory',
+      path: packageDir
     }
   };
 
@@ -72,8 +72,8 @@ function install() {
 
   knownMarketplaces[MARKETPLACE_NAME] = {
     source: {
-      source: 'npm',
-      package: PLUGIN_NAME
+      source: 'directory',
+      path: packageDir
     },
     installLocation: packageDir,
     lastUpdated: new Date().toISOString()
