@@ -8,15 +8,15 @@ use_when:
 
 # /sessions - 세션 목록 및 인덱스
 
-아카이브된 세션 목록을 조회하고 인덱스를 관리합니다.
+등록된 세션 목록을 조회하고 인덱스를 관리합니다.
 
 ## 사용법
 
 ```
-/sessions                # 아카이브된 세션 목록
+/sessions                # 등록된 세션 목록
+/sessions --available    # 등록 가능한 세션 (아직 등록 안 된)
 /sessions --index        # index.md 보기
 /sessions --update       # index.md 갱신
-/sessions --available    # 내보내기 가능한 세션 (아직 아카이브 안 된)
 ```
 
 ## 인자: $ARGUMENTS
@@ -25,35 +25,59 @@ use_when:
 
 ### 1. 인자 파싱
 
-- (없음): 아카이브된 세션 목록 표시
+- (없음): 등록된 세션 목록 표시
+- `--available` 또는 `-a`: 등록 가능한 세션 목록
 - `--index` 또는 `-i`: index.md 내용 표시
 - `--update` 또는 `-u`: index.md 갱신
-- `--available` 또는 `-a`: 아카이브 가능한 세션 목록
 - `--help` 또는 `-h`: 도움말 표시
 
 ### 2. 세션 목록 (기본)
 
-`.claude/sessions/*.jsonl` 파일들을 조회하여 표시:
+`.claude/sessions/*.meta.json` 파일들을 조회하여 표시:
 
 ```
-Archived Sessions (5)
+📚 등록된 세션 (5)
 
-| Date       | Topic         | Messages | Size  | Summary |
-|------------|---------------|----------|-------|---------|
-| 2026-01-18 | login-feature | 42       | 125KB | ✓       |
-| 2026-01-17 | api-refactor  | 78       | 230KB | ✓       |
-| 2026-01-16 | bug-fix       | 15       | 45KB  | -       |
+| # | Date       | Topic           | ID       | Msgs | Summary | Source |
+|---|------------|-----------------|----------|------|---------|--------|
+| 1 | 2026-01-18 | login-feature   | f6702810 | 42   | ✓       | ✓      |
+| 2 | 2026-01-17 | api-refactor    | a1b2c3d4 | 78   | ✓       | ✓      |
+| 3 | 2026-01-16 | bug-fix         | e5f6g7h8 | 15   | -       | ⚠️      |
 ...
+
+💡 팁:
+  /session view <id>   → 세션 내용 보기
+  /session resume <id> → 세션 이어하기
+  /session load <id>   → 요약 로드
 ```
 
 각 세션에 대해:
-- 날짜: 파일명에서 추출
-- 토픽: 파일명에서 추출
-- 메시지 수: 줄 수 / 2
-- 크기: 파일 크기
+- 날짜: meta.json의 `createdAt`에서 추출
+- 토픽: meta.json의 `topic`
+- ID: 세션 ID 앞 8자리
+- Msgs: 메시지 수
 - Summary: `.summary.md` 존재 여부
+- Source: 원본 jsonl 존재 여부 (⚠️ = 원본 없음)
 
-### 3. --index인 경우
+### 3. --available인 경우
+
+등록되지 않은 세션 목록:
+
+```
+📋 등록 가능한 세션 (3)
+
+| # | Session ID | Last Modified    | Size   | Msgs |
+|---|------------|------------------|--------|------|
+| 1 | f6702810   | 2 hours ago      | 125KB  | 42   |
+| 2 | a1b2c3d4   | 1 day ago        | 230KB  | 78   |
+| 3 | e5f6g7h8   | 3 days ago       | 45KB   | 15   |
+
+💡 등록하려면: /save <session-id> [topic]
+```
+
+Claude 세션 디렉토리 (`~/.claude/projects/{project-hash}/`)와 등록된 세션 (`.claude/sessions/*.meta.json`)을 비교하여 아직 등록 안 된 세션 표시.
+
+### 4. --index인 경우
 
 `.claude/sessions/index.md` 파일 내용 표시.
 
@@ -62,84 +86,75 @@ Archived Sessions (5)
 No index found. Generate with: /sessions --update
 ```
 
-### 4. --update인 경우
+### 5. --update인 경우
 
 index.md 파일을 갱신합니다.
 
-#### 4.1 세션 정보 수집
+#### 5.1 세션 정보 수집
 
-각 `.jsonl` 파일에서:
-- 파일명 파싱 (날짜, 시간, 토픽, 세션ID)
-- 파일 크기
-- 메시지 수
+각 `.meta.json` 파일에서:
+- 세션 ID, 토픽, 날짜
+- 메시지 수, 파일 크기
 - 관련 파일 존재 여부 (`.summary.md`, `.roadmap.md`)
+- 원본 존재 여부
 
-#### 4.2 index.md 생성
+#### 5.2 index.md 생성
 
 ```markdown
 # Session Index
 
-Last updated: {timestamp}
-Total sessions: {count}
+Last updated: 2026-01-18T15:00:00Z
+Total sessions: 5
 
 ## Sessions
 
-| Date | Time | Topic | ID | Messages | Size | Summary | Roadmap |
-|------|------|-------|-----|----------|------|---------|---------|
-| 2026-01-18 | 14:30 | login-feature | f6702810 | 42 | 125KB | [View](./xxx.summary.md) | [View](./xxx.roadmap.md) |
+| Date | Topic | ID | Messages | Summary | Roadmap | Source |
+|------|-------|-----|----------|---------|---------|--------|
+| 2026-01-18 | login-feature | f6702810 | 42 | [View](./xxx.summary.md) | [View](./xxx.roadmap.md) | ✓ |
+| 2026-01-17 | api-refactor | a1b2c3d4 | 78 | [View](./xxx.summary.md) | - | ✓ |
 ...
+
+## Quick Commands
+
+- View session: `/session view <id>`
+- Resume session: `/session resume <id>`
+- Load context: `/session load <id>`
 
 ## Statistics
 
-- Total sessions: 15
-- Total messages: 520
-- Total size: 2.3MB
-- With summaries: 12
-- With roadmaps: 10
+- Total sessions: 5
+- Total messages: 195
+- With summaries: 4
+- With roadmaps: 3
+- Missing source: 1
 ```
-
-### 5. --available인 경우
-
-아직 아카이브되지 않은 세션 목록:
-
-```
-Available Sessions (not archived)
-
-| Session ID | Last Modified | Size   |
-|------------|---------------|--------|
-| f6702810   | 2 hours ago   | 125KB  |
-| a1b2c3d4   | 1 day ago     | 230KB  |
-...
-
-Export with: /export <session-id>
-```
-
-Claude 세션 디렉토리 (`~/.claude/projects/{project-hash}/`)와 아카이브 디렉토리 (`.claude/sessions/`)를 비교하여 아직 내보내지 않은 세션 표시.
 
 ### 6. 결과 출력
 
 목록 표시 후:
 ```
-Tip: Use /export to archive sessions, /summary to generate summaries
+💡 팁: /session view <id>로 세션 내용을 보거나, /session resume <id>로 이어하기
 ```
 
 ## 예시
 
 ```
 /sessions
-→ 아카이브된 세션 목록
+→ 등록된 세션 목록
+
+/sessions --available
+→ 등록 가능한 세션 보기
 
 /sessions --index
 → index.md 보기
 
 /sessions --update
 → index.md 갱신
-
-/sessions --available
-→ 아카이브 가능한 세션 보기
 ```
 
-## 주의사항
+## 관련 커맨드
 
-- index.md는 세션 내보내기 시 자동 업데이트됨 (훅 설정 시)
-- 수동으로 index.md를 편집해도 --update 시 덮어씀
+- `/save` - 세션 등록
+- `/session view` - 세션 내용 보기
+- `/session resume` - 세션 이어하기
+- `/summary` - 세션 요약 생성
