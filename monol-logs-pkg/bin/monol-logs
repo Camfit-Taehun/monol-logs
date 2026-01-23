@@ -1,0 +1,82 @@
+#!/bin/bash
+# monol-logs CLI
+# Claude Code 세션 관리 도구
+
+set -e
+
+SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
+LIB_DIR="$SCRIPT_DIR/../lib"
+
+# 사용법 출력
+usage() {
+  cat << EOF
+monol-logs v4.7.0 - Claude Code 세션 관리 도구
+
+Usage: monol-logs <command> [options]
+
+Commands:
+  session <view|resume|load> <id>   세션 보기/이어하기/로드
+  visualize [--ascii|--md|--html]   세션 시각화
+  insights [--me|--team|--todos]    인사이트 분석
+  help                              도움말 표시
+
+Examples:
+  monol-logs session view f6702810      # 세션 내용 보기
+  monol-logs session load f6702810      # 세션 컨텍스트 로드
+  monol-logs visualize --html --open    # HTML 대시보드 생성
+  monol-logs insights --team            # 팀 인사이트
+
+Options:
+  -h, --help    도움말 표시
+  -v, --version 버전 표시
+
+Note: Claude Code 내에서는 /session, /visualize, /insights 스킬을 사용하세요.
+
+EOF
+}
+
+# 버전 출력
+version() {
+  echo "monol-logs v4.7.0"
+}
+
+# 메인
+main() {
+  local command="${1:-}"
+
+  case "$command" in
+    session)
+      shift
+      source "$LIB_DIR/session.sh"
+      session_main "$@"
+      ;;
+    visualize)
+      shift
+      source "$LIB_DIR/visualize.sh"
+      visualize_main "$@"
+      ;;
+    insights)
+      shift
+      source "$LIB_DIR/insights.sh"
+      insights_main "$@"
+      ;;
+    -h|--help|help)
+      usage
+      ;;
+    -v|--version|version)
+      version
+      ;;
+    "")
+      usage
+      exit 1
+      ;;
+    *)
+      echo "Unknown command: $command"
+      echo ""
+      usage
+      exit 1
+      ;;
+  esac
+}
+
+main "$@"

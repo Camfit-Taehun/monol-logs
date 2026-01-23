@@ -1,0 +1,716 @@
+<!DOCTYPE html>
+<html lang="ko" class="dark">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Monol Logs Console</title>
+  <style>
+    :root {
+      --bg-primary: #0a0a0a;
+      --bg-secondary: #171717;
+      --bg-tertiary: #1a1a1a;
+      --border-color: #262626;
+      --text-primary: #fafafa;
+      --text-secondary: #a3a3a3;
+      --text-muted: #737373;
+      --accent-green: #22c55e;
+      --accent-cyan: #06b6d4;
+      --accent-blue: #3b82f6;
+      --accent-purple: #a855f7;
+      --accent-orange: #f97316;
+      --accent-yellow: #f59e0b;
+      --accent-red: #ef4444;
+    }
+    * { margin: 0; padding: 0; box-sizing: border-box; }
+    body {
+      font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', 'Noto Sans', sans-serif;
+      background: var(--bg-primary);
+      color: var(--text-primary);
+      min-height: 100vh;
+      display: flex;
+    }
+
+    /* Sidebar */
+    .sidebar {
+      width: 280px;
+      background: var(--bg-secondary);
+      border-right: 1px solid var(--border-color);
+      padding: 16px;
+      display: flex;
+      flex-direction: column;
+      flex-shrink: 0;
+    }
+    .sidebar-header {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      padding-bottom: 16px;
+      border-bottom: 1px solid var(--border-color);
+      margin-bottom: 16px;
+    }
+    .sidebar-header h1 {
+      font-size: 18px;
+      background: linear-gradient(90deg, var(--accent-green), var(--accent-cyan));
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
+      background-clip: text;
+    }
+    .search-box {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      padding: 10px 12px;
+      background: var(--bg-tertiary);
+      border: 1px solid var(--border-color);
+      border-radius: 8px;
+      margin-bottom: 16px;
+    }
+    .search-box input {
+      flex: 1;
+      background: none;
+      border: none;
+      color: var(--text-primary);
+      font-size: 13px;
+      outline: none;
+    }
+    .search-box input::placeholder { color: var(--text-muted); }
+    .filter-section { margin-bottom: 20px; }
+    .filter-section h3 {
+      font-size: 11px;
+      color: var(--text-secondary);
+      text-transform: uppercase;
+      letter-spacing: 0.5px;
+      margin-bottom: 8px;
+    }
+    .filter-item {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      padding: 8px 10px;
+      border-radius: 6px;
+      cursor: pointer;
+      font-size: 13px;
+      transition: background 0.15s;
+    }
+    .filter-item:hover { background: var(--bg-tertiary); }
+    .filter-item.active { background: var(--accent-green); color: #000; }
+    .filter-count { margin-left: auto; font-size: 11px; opacity: 0.7; }
+    .author-avatar {
+      width: 24px;
+      height: 24px;
+      border-radius: 50%;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 11px;
+      font-weight: 600;
+    }
+    .avatar-kent { background: linear-gradient(135deg, #06b6d4, #3b82f6); }
+    .avatar-alice { background: linear-gradient(135deg, #a855f7, #ec4899); }
+
+    /* Main Content */
+    .main {
+      flex: 1;
+      display: flex;
+      flex-direction: column;
+      min-width: 0;
+    }
+    .main-header {
+      padding: 16px 24px;
+      border-bottom: 1px solid var(--border-color);
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+    }
+    .main-header h2 { font-size: 16px; font-weight: 600; }
+    .view-toggle {
+      display: flex;
+      gap: 4px;
+      background: var(--bg-tertiary);
+      padding: 4px;
+      border-radius: 6px;
+    }
+    .view-btn {
+      padding: 6px 12px;
+      border: none;
+      background: none;
+      color: var(--text-secondary);
+      border-radius: 4px;
+      cursor: pointer;
+      font-size: 12px;
+      transition: all 0.15s;
+    }
+    .view-btn:hover { color: var(--text-primary); }
+    .view-btn.active {
+      background: var(--bg-secondary);
+      color: var(--text-primary);
+      box-shadow: 0 1px 3px rgba(0,0,0,0.2);
+    }
+
+    /* Sessions List */
+    .sessions-list {
+      flex: 1;
+      overflow-y: auto;
+      padding: 16px 24px;
+    }
+    .date-group { margin-bottom: 24px; }
+    .date-label {
+      font-size: 12px;
+      color: var(--text-secondary);
+      margin-bottom: 12px;
+      padding-bottom: 8px;
+      border-bottom: 1px solid var(--border-color);
+    }
+    .session-item {
+      display: flex;
+      align-items: flex-start;
+      gap: 12px;
+      padding: 16px;
+      background: var(--bg-secondary);
+      border: 1px solid var(--border-color);
+      border-radius: 10px;
+      margin-bottom: 8px;
+      cursor: pointer;
+      transition: all 0.2s;
+    }
+    .session-item:hover { border-color: var(--accent-green); }
+    .session-item.selected {
+      border-color: var(--accent-green);
+      background: rgba(34, 197, 94, 0.05);
+    }
+    .session-avatar {
+      width: 40px;
+      height: 40px;
+      border-radius: 50%;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 16px;
+      font-weight: 600;
+      flex-shrink: 0;
+    }
+    .session-content { flex: 1; min-width: 0; }
+    .session-title {
+      font-size: 14px;
+      font-weight: 600;
+      margin-bottom: 4px;
+      white-space: nowrap;
+      overflow: hidden;
+      text-overflow: ellipsis;
+    }
+    .session-excerpt {
+      font-size: 13px;
+      color: var(--text-secondary);
+      margin-bottom: 8px;
+      overflow: hidden;
+      text-overflow: ellipsis;
+      white-space: nowrap;
+    }
+    .session-meta {
+      display: flex;
+      gap: 16px;
+      font-size: 12px;
+      color: var(--text-secondary);
+      flex-wrap: wrap;
+    }
+    .session-actions {
+      display: flex;
+      flex-direction: column;
+      gap: 4px;
+      align-items: flex-end;
+      flex-shrink: 0;
+    }
+    .session-time { font-size: 12px; color: var(--text-secondary); }
+    .session-badges { display: flex; gap: 4px; }
+    .badge {
+      font-size: 10px;
+      padding: 2px 6px;
+      border-radius: 4px;
+      background: var(--bg-tertiary);
+    }
+    .badge-starred { background: rgba(245, 158, 11, 0.2); color: #f59e0b; }
+    .badge-important { background: rgba(239, 68, 68, 0.2); color: #ef4444; }
+
+    /* Detail Panel */
+    .detail-panel {
+      width: 400px;
+      background: var(--bg-secondary);
+      border-left: 1px solid var(--border-color);
+      padding: 20px;
+      overflow-y: auto;
+      flex-shrink: 0;
+    }
+    .detail-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: flex-start;
+      margin-bottom: 20px;
+      padding-bottom: 16px;
+      border-bottom: 1px solid var(--border-color);
+    }
+    .detail-title { font-size: 16px; font-weight: 600; margin-bottom: 8px; }
+    .detail-meta { font-size: 12px; color: var(--text-secondary); }
+    .detail-actions { display: flex; gap: 8px; }
+    .action-btn {
+      width: 32px;
+      height: 32px;
+      border: 1px solid var(--border-color);
+      background: var(--bg-tertiary);
+      border-radius: 6px;
+      cursor: pointer;
+      font-size: 14px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      transition: all 0.15s;
+    }
+    .action-btn:hover { background: var(--bg-primary); }
+    .detail-section { margin-bottom: 20px; }
+    .detail-section h3 {
+      font-size: 12px;
+      color: var(--text-secondary);
+      text-transform: uppercase;
+      letter-spacing: 0.5px;
+      margin-bottom: 10px;
+    }
+    .message-preview {
+      background: var(--bg-tertiary);
+      border-radius: 8px;
+      padding: 12px;
+      font-size: 13px;
+      line-height: 1.6;
+      max-height: 300px;
+      overflow-y: auto;
+    }
+    .message-preview ul {
+      list-style: none;
+      padding: 0;
+    }
+    .message-preview li {
+      padding: 4px 0;
+      padding-left: 16px;
+      position: relative;
+    }
+    .message-preview li::before {
+      content: "•";
+      position: absolute;
+      left: 0;
+      color: var(--accent-green);
+    }
+    .tag-list { display: flex; flex-wrap: wrap; gap: 6px; }
+    .tag {
+      padding: 4px 10px;
+      background: var(--bg-tertiary);
+      border-radius: 12px;
+      font-size: 12px;
+    }
+    .file-list {
+      background: var(--bg-tertiary);
+      border-radius: 8px;
+      padding: 12px;
+      font-family: 'SF Mono', 'Consolas', monospace;
+      font-size: 12px;
+    }
+    .file-item {
+      padding: 4px 0;
+      display: flex;
+      align-items: center;
+      gap: 8px;
+    }
+    .file-item .status-new { color: var(--accent-green); }
+    .file-item .status-modified { color: var(--accent-yellow); }
+    .file-item .status-deleted { color: var(--accent-red); }
+
+    /* Empty State */
+    .empty-state {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      height: 100%;
+      color: var(--text-secondary);
+      text-align: center;
+      padding: 40px;
+    }
+    .empty-state-icon { font-size: 48px; margin-bottom: 16px; }
+    .empty-state-title { font-size: 16px; font-weight: 600; margin-bottom: 8px; }
+    .empty-state-desc { font-size: 13px; }
+
+    /* Loading State */
+    .loading {
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      height: 100%;
+    }
+    .spinner {
+      width: 32px;
+      height: 32px;
+      border: 3px solid var(--border-color);
+      border-top-color: var(--accent-green);
+      border-radius: 50%;
+      animation: spin 1s linear infinite;
+    }
+    @keyframes spin {
+      to { transform: rotate(360deg); }
+    }
+  </style>
+</head>
+<body>
+  <aside class="sidebar">
+    <div class="sidebar-header">
+      <span style="font-size: 24px;">📝</span>
+      <h1>Monol Logs</h1>
+    </div>
+
+    <div class="search-box">
+      <span>🔍</span>
+      <input type="text" id="searchInput" placeholder="Search sessions...">
+    </div>
+
+    <div class="filter-section">
+      <h3>View</h3>
+      <div class="filter-item active" data-filter="all">
+        <span>📋</span>
+        <span>All Sessions</span>
+        <span class="filter-count" id="count-all">0</span>
+      </div>
+      <div class="filter-item" data-filter="starred">
+        <span>⭐</span>
+        <span>Starred</span>
+        <span class="filter-count" id="count-starred">0</span>
+      </div>
+      <div class="filter-item" data-filter="today">
+        <span>📅</span>
+        <span>Today</span>
+        <span class="filter-count" id="count-today">0</span>
+      </div>
+    </div>
+
+    <div class="filter-section" id="authorsSection">
+      <h3>Authors</h3>
+      <!-- Dynamic content -->
+    </div>
+
+    <div class="filter-section" id="projectsSection">
+      <h3>Projects</h3>
+      <!-- Dynamic content -->
+    </div>
+  </aside>
+
+  <main class="main">
+    <header class="main-header">
+      <h2 id="viewTitle">📋 All Sessions</h2>
+      <div class="view-toggle">
+        <button class="view-btn active" data-view="list">List</button>
+        <button class="view-btn" data-view="timeline">Timeline</button>
+        <button class="view-btn" data-view="calendar">Calendar</button>
+      </div>
+    </header>
+
+    <div class="sessions-list" id="sessionsList">
+      <!-- Dynamic content -->
+    </div>
+  </main>
+
+  <aside class="detail-panel" id="detailPanel">
+    <div class="empty-state">
+      <div class="empty-state-icon">📋</div>
+      <div class="empty-state-title">No Session Selected</div>
+      <div class="empty-state-desc">Select a session from the list to view details</div>
+    </div>
+  </aside>
+
+  <script>
+    // Sample data - in production, this would come from the API
+    const sampleSessions = [
+      {
+        id: 1,
+        title: 'GitHub 웹훅 자동 갱신 구현',
+        excerpt: 'POST /api/webhooks/github 엔드포인트 생성, WebSocket 알림 구현...',
+        author: { name: 'Kent', avatar: 'K' },
+        messages: 45,
+        duration: '2h 15m',
+        project: 'monol-server',
+        date: new Date(),
+        time: '14:32',
+        starred: true,
+        summary: [
+          'POST /api/webhooks/github 엔드포인트 생성',
+          'HMAC-SHA256 시크릿 검증',
+          'git pull 자동 실행',
+          'WebSocket으로 브라우저 실시간 알림',
+          '수동 리로드 API 추가'
+        ],
+        tags: ['webhook', 'websocket', 'feature'],
+        files: [
+          { name: 'src/api/webhooks.js', status: 'new' },
+          { name: 'src/api/plugins.js', status: 'modified' },
+          { name: 'server.js', status: 'modified' },
+          { name: 'public/index.html', status: 'modified' }
+        ]
+      },
+      {
+        id: 2,
+        title: '통합 콘솔 컴포넌트 확충',
+        excerpt: 'Phase 1-4 컴포넌트 개발 완료, LogsStatsCard, ChannelsDecisionList...',
+        author: { name: 'Kent', avatar: 'K' },
+        messages: 128,
+        duration: '4h 30m',
+        project: 'monol-console',
+        date: new Date(),
+        time: '11:20',
+        starred: true,
+        summary: [
+          'Phase 1-4 컴포넌트 개발 완료',
+          'LogsStatsCard 통계 카드 구현',
+          'ChannelsDecisionList 결정사항 목록',
+          'XEvolutionChart 진화 차트',
+          '서버 통합 및 라우팅 추가'
+        ],
+        tags: ['component', 'ui', 'feature'],
+        files: [
+          { name: 'components/stats-card.js', status: 'new' },
+          { name: 'components/session-list.js', status: 'new' },
+          { name: 'components/timeline.js', status: 'new' },
+          { name: 'index.html', status: 'modified' }
+        ]
+      },
+      {
+        id: 3,
+        title: 'Plugin Scout 추천 알고리즘 개선',
+        excerpt: '점수 계산 가중치 조정, 프로젝트 매칭 정확도 향상...',
+        author: { name: 'Alice', avatar: 'A' },
+        messages: 67,
+        duration: '1h 45m',
+        project: 'monol-plugin-scout',
+        date: new Date(Date.now() - 86400000), // Yesterday
+        time: '15:30',
+        starred: false,
+        summary: [
+          '점수 계산 가중치 조정',
+          '프로젝트 매칭 정확도 향상',
+          '사용자 선호도 반영 알고리즘',
+          '캐싱 레이어 추가'
+        ],
+        tags: ['algorithm', 'optimization'],
+        files: [
+          { name: 'lib/scorer.js', status: 'modified' },
+          { name: 'lib/matcher.js', status: 'modified' }
+        ]
+      }
+    ];
+
+    let selectedSession = null;
+    let currentFilter = 'all';
+
+    // Initialize
+    function init() {
+      renderSessions();
+      updateCounts();
+      setupEventListeners();
+    }
+
+    function renderSessions() {
+      const container = document.getElementById('sessionsList');
+      const grouped = groupByDate(filterSessions());
+
+      if (Object.keys(grouped).length === 0) {
+        container.innerHTML = `
+          <div class="empty-state">
+            <div class="empty-state-icon">📭</div>
+            <div class="empty-state-title">No Sessions Found</div>
+            <div class="empty-state-desc">Try adjusting your filters</div>
+          </div>
+        `;
+        return;
+      }
+
+      let html = '';
+      for (const [date, sessions] of Object.entries(grouped)) {
+        html += `<div class="date-group">
+          <div class="date-label">${date}</div>
+          ${sessions.map(s => renderSessionItem(s)).join('')}
+        </div>`;
+      }
+      container.innerHTML = html;
+    }
+
+    function renderSessionItem(session) {
+      const avatarClass = session.author.name === 'Kent' ? 'avatar-kent' : 'avatar-alice';
+      const selected = selectedSession?.id === session.id ? 'selected' : '';
+      const starred = session.starred ? '<span class="badge badge-starred">⭐</span>' : '';
+
+      return `
+        <div class="session-item ${selected}" data-id="${session.id}">
+          <div class="session-avatar ${avatarClass}">${session.author.avatar}</div>
+          <div class="session-content">
+            <div class="session-title">${session.title}</div>
+            <div class="session-excerpt">${session.excerpt}</div>
+            <div class="session-meta">
+              <span>💬 ${session.messages} messages</span>
+              <span>⏱️ ${session.duration}</span>
+              <span>🏷️ ${session.project}</span>
+            </div>
+          </div>
+          <div class="session-actions">
+            <span class="session-time">${session.time}</span>
+            <div class="session-badges">${starred}</div>
+          </div>
+        </div>
+      `;
+    }
+
+    function renderDetail(session) {
+      const panel = document.getElementById('detailPanel');
+
+      panel.innerHTML = `
+        <div class="detail-header">
+          <div>
+            <div class="detail-title">${session.title}</div>
+            <div class="detail-meta">${formatDate(session.date)} ${session.time} · ${session.duration} · ${session.messages} messages</div>
+          </div>
+          <div class="detail-actions">
+            <button class="action-btn" title="Star">${session.starred ? '⭐' : '☆'}</button>
+            <button class="action-btn" title="Export">📤</button>
+            <button class="action-btn" title="Delete">🗑️</button>
+          </div>
+        </div>
+
+        <div class="detail-section">
+          <h3>Summary</h3>
+          <div class="message-preview">
+            <ul>
+              ${session.summary.map(s => `<li>${s}</li>`).join('')}
+            </ul>
+          </div>
+        </div>
+
+        <div class="detail-section">
+          <h3>Tags</h3>
+          <div class="tag-list">
+            <span class="tag">🏷️ ${session.project}</span>
+            ${session.tags.map(t => `<span class="tag">${t}</span>`).join('')}
+          </div>
+        </div>
+
+        <div class="detail-section">
+          <h3>Files Changed</h3>
+          <div class="file-list">
+            ${session.files.map(f => `
+              <div class="file-item">
+                <span class="status-${f.status}">${f.status === 'new' ? '+' : f.status === 'deleted' ? '-' : '~'}</span>
+                <span>${f.name}</span>
+              </div>
+            `).join('')}
+          </div>
+        </div>
+      `;
+    }
+
+    function groupByDate(sessions) {
+      const groups = {};
+      const today = new Date().toDateString();
+      const yesterday = new Date(Date.now() - 86400000).toDateString();
+
+      sessions.forEach(s => {
+        const dateStr = s.date.toDateString();
+        let label;
+        if (dateStr === today) {
+          label = `Today · ${formatDateLabel(s.date)}`;
+        } else if (dateStr === yesterday) {
+          label = `Yesterday · ${formatDateLabel(s.date)}`;
+        } else {
+          label = formatDateLabel(s.date);
+        }
+
+        if (!groups[label]) groups[label] = [];
+        groups[label].push(s);
+      });
+
+      return groups;
+    }
+
+    function filterSessions() {
+      let filtered = [...sampleSessions];
+
+      if (currentFilter === 'starred') {
+        filtered = filtered.filter(s => s.starred);
+      } else if (currentFilter === 'today') {
+        const today = new Date().toDateString();
+        filtered = filtered.filter(s => s.date.toDateString() === today);
+      }
+
+      const search = document.getElementById('searchInput').value.toLowerCase();
+      if (search) {
+        filtered = filtered.filter(s =>
+          s.title.toLowerCase().includes(search) ||
+          s.excerpt.toLowerCase().includes(search) ||
+          s.project.toLowerCase().includes(search)
+        );
+      }
+
+      return filtered;
+    }
+
+    function updateCounts() {
+      const today = new Date().toDateString();
+      document.getElementById('count-all').textContent = sampleSessions.length;
+      document.getElementById('count-starred').textContent = sampleSessions.filter(s => s.starred).length;
+      document.getElementById('count-today').textContent = sampleSessions.filter(s => s.date.toDateString() === today).length;
+    }
+
+    function formatDate(date) {
+      return date.toLocaleDateString('en-US', { month: 'short', day: 'numeric' });
+    }
+
+    function formatDateLabel(date) {
+      return date.toLocaleDateString('en-US', { month: 'long', day: 'numeric', year: 'numeric' });
+    }
+
+    function setupEventListeners() {
+      // Filter items
+      document.querySelectorAll('.filter-item').forEach(item => {
+        item.addEventListener('click', () => {
+          document.querySelectorAll('.filter-item').forEach(i => i.classList.remove('active'));
+          item.classList.add('active');
+          currentFilter = item.dataset.filter;
+
+          const titles = { all: '📋 All Sessions', starred: '⭐ Starred', today: '📅 Today' };
+          document.getElementById('viewTitle').textContent = titles[currentFilter];
+
+          renderSessions();
+        });
+      });
+
+      // Session items
+      document.getElementById('sessionsList').addEventListener('click', (e) => {
+        const item = e.target.closest('.session-item');
+        if (item) {
+          const id = parseInt(item.dataset.id);
+          selectedSession = sampleSessions.find(s => s.id === id);
+          renderSessions();
+          renderDetail(selectedSession);
+        }
+      });
+
+      // Search
+      document.getElementById('searchInput').addEventListener('input', () => {
+        renderSessions();
+      });
+
+      // View toggle
+      document.querySelectorAll('.view-btn').forEach(btn => {
+        btn.addEventListener('click', () => {
+          document.querySelectorAll('.view-btn').forEach(b => b.classList.remove('active'));
+          btn.classList.add('active');
+          // View switching logic would go here
+        });
+      });
+    }
+
+    // Start
+    init();
+  </script>
+</body>
+</html>

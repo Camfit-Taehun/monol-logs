@@ -124,6 +124,50 @@ visualize_md_file: "visualization.md"
 visualize_html_file: "dashboard.html"
 
 # =====================
+# 서버 동기화 설정 (v4.5)
+# =====================
+
+# 동기화 활성화
+sync_enabled: true
+
+# monol-server URL
+sync_server_url: "http://localhost:3030"
+
+# 팀 ID (선택사항)
+sync_team: ""
+
+# 동기화 타임아웃 (초)
+sync_timeout: 5
+
+# =====================
+# 인사이트 설정 (v4.6)
+# =====================
+
+# 인사이트 활성화
+insights_enabled: true
+
+# Stale TODO 기준 (일)
+insights_stale_days: 14
+
+# 지식 맵 영역 매핑 (패턴 -> 영역 이름)
+# 기본값 외 추가 매핑 가능
+insights_area_mapping:
+  - pattern: "auth|login|session"
+    area: "auth"
+  - pattern: "api|endpoint|rest"
+    area: "api"
+  - pattern: "ui|dashboard|frontend|component"
+    area: "frontend"
+  - pattern: "doc|readme"
+    area: "docs"
+  - pattern: "test|spec"
+    area: "test"
+  - pattern: "bug|fix|hotfix"
+    area: "bugfix"
+  - pattern: "infra|deploy|ci"
+    area: "infra"
+
+# =====================
 # 보관 정책
 # =====================
 

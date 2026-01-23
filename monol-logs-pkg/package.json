@@ -1,0 +1,62 @@
+{
+  "name": "monol-logs",
+  "version": "4.7.0",
+  "description": "Claude Code 세션 관리 - 등록, 보기, 이어하기, 요약, 로드맵, 시각화, 인사이트",
+  "keywords": [
+    "claude",
+    "claude-code",
+    "session",
+    "log",
+    "archive",
+    "visualization",
+    "insights",
+    "team",
+    "collaboration"
+  ],
+  "author": "monol",
+  "license": "MIT",
+  "homepage": "https://github.com/monol/monol-logs",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/monol/monol-logs.git"
+  },
+  "bugs": {
+    "url": "https://github.com/monol/monol-logs/issues"
+  },
+  "main": "lib/utils.sh",
+  "bin": {
+    "monol-logs": "./bin/monol-logs"
+  },
+  "files": [
+    "lib/",
+    "skills/",
+    "commands/",
+    "hooks/",
+    "templates/",
+    "scripts/",
+    "config.yaml",
+    "plugin.json",
+    "CLAUDE.md",
+    "bin/"
+  ],
+  "scripts": {
+    "test": "bash scripts/test.sh",
+    "lint": "shellcheck lib/*.sh",
+    "mock-server": "node mock-server.js"
+  },
+  "engines": {
+    "node": ">=16.0.0"
+  },
+  "os": [
+    "darwin",
+    "linux"
+  ],
+  "dependencies": {},
+  "devDependencies": {},
+  "peerDependencies": {},
+  "claude-code": {
+    "commands": "commands/",
+    "skills": "skills/",
+    "hooks": "hooks/"
+  }
+}

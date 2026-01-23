@@ -27,6 +27,7 @@ npm install -g monol-logs
 | `/summary` | 요약, 정리 | AI 요약 생성 |
 | `/branch` | 브랜치, 분기 | 세션 분기 |
 | `/visualize` | 시각화, 대시보드 | 타임라인/대시보드 생성 |
+| `/insights` | 인사이트, 분석, 통계 | 개인/팀 인사이트 분석 |
 
 **한글 자연어 입력 지원**: "세션 목록 보여줘", "이전 세션 이어해줘" 등
 
@@ -161,6 +162,55 @@ git push
 - `--ascii` (기본): 터미널에 ASCII 타임라인 출력
 - `--md`: `.claude/sessions/visualization.md` 생성
 - `--html`: `.claude/sessions/dashboard.html` 생성 (브라우저에서 열기)
+
+## 인사이트
+
+```bash
+# 전체 인사이트 (개인 + 팀 + TODO)
+/insights
+
+# 개인 작업 패턴
+/insights --me
+
+# 팀 기여도 및 지식 맵
+/insights --team
+
+# TODO 현황
+/insights --todos
+
+# 특정 멤버 필터
+/insights --author alice
+
+# AI 분석 리포트 생성
+/insights --report
+
+# 주간/월간 리포트
+/insights --report --weekly
+/insights --report --monthly
+
+# 리포트 파일로 저장
+/insights --report --export md
+```
+
+**출력 예시:**
+```
+📊 My Work Patterns
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+Peak Hours:    14:00 - 18:00
+Most Active:   Tue
+Avg Session:   2h 15m
+Total:         24 sessions
+
+👥 Team Contribution
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+alice        ████████████████ 24 sessions (45%)
+bob          ██████████       15 sessions (28%)
+
+🗺️ Knowledge Map
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+auth/*         → alice (●), bob
+api/*          → bob (●) ⚠️ sole owner
+```
 
 ## vs `claude --resume`
 

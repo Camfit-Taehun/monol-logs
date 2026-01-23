@@ -16,6 +16,7 @@ PLUGIN_DIR="$(dirname "$SCRIPT_DIR")"
 
 # 공통 유틸 로드
 source "$PLUGIN_DIR/lib/utils.sh"
+source "$PLUGIN_DIR/lib/sync.sh"
 
 # 사용법 출력
 usage() {
@@ -146,8 +147,31 @@ export_session() {
   if copy_session "$session_file" "$backup_dir/$filename"; then
     echo ""
     echo "Stats:"
-    print_session_stats "$backup_dir/$filename"
+    local stats=$(print_session_stats "$backup_dir/$filename")
+    echo "$stats"
+
+    # 메타데이터 추출
+    local message_count=$(echo "$stats" | grep -o '[0-9]* messages' | awk '{print $1}')
+    local created_at=$(jq -r 'select(.type == "summary") | .createdAt' "$session_file" 2>/dev/null | head -1)
+    local ended_at=$(date -u +"%Y-%m-%dT%H:%M:%SZ")
+
+    # duration 계산 (대략적)
+    local duration_ms=0
+    if [ -n "$created_at" ]; then
+      local start_ts=$(date -j -f "%Y-%m-%dT%H:%M:%S" "${created_at%Z}" "+%s" 2>/dev/null || echo "0")
+      local end_ts=$(date "+%s")
+      if [ "$start_ts" -gt 0 ]; then
+        duration_ms=$(( (end_ts - start_ts) * 1000 ))
+      fi
+    fi
+
     echo ""
+
+    # 서버 동기화
+    if sync_session_saved "$session_id" "$topic" "$message_count" "$duration_ms" "$created_at" "$ended_at"; then
+      color_echo cyan "Synced to server"
+    fi
+
     color_echo green "Export complete!"
   else
     color_echo red "Export failed"

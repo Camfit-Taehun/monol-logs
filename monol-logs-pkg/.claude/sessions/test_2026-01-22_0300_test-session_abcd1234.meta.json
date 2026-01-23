@@ -1,0 +1,9 @@
+{
+  "sessionId": "abcd1234-5678-90ab-cdef-1234567890ab",
+  "topic": "test-session",
+  "savedBy": "tester",
+  "createdAt": "2026-01-22T03:00:00Z",
+  "savedAt": "2026-01-22T04:30:00Z",
+  "messageCount": 25,
+  "source": "~/.claude/projects/test/abcd1234.jsonl"
+}
